@@ -187,6 +187,27 @@ if [ "$1" == "link" ]; then
   emit_asm | ${HL_CROSS_COMPILE}gcc -E - > "${t0}"
   cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
                                  -x assembler -c - -o "${t1}"
+
+  # rp2040 needs the first 256 bytes with a checksum
+  # ~/git/pico-sdk/src/rp2040/boot_stage2/pad_checksum -s 0xffffffff
+  HL_RP2040_PAD_CHECKSUM=`hl_query_top get-rp2040-pad-checksum`
+  if [ -n "${HL_RP2040_PAD_CHECKSUM}" ]; then
+    echo running ${HL_RP2040_PAD_CHECKSUM} >&2
+    ${HL_CROSS_COMPILE}objcopy "${t1}" -O binary "${t0}"
+    ${HL_RP2040_PAD_CHECKSUM} -s 0xffffffff "${t0}" "${t1}"
+cat > "${t0}" <<EOF
+  .syntax unified
+
+  .align 1
+  .global _start
+  .type _start, %function
+_start:
+EOF
+    cat "${t1}" | tail -n +8 >> "${t0}"
+    cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
+                                 -x assembler -c - -o "${t1}"
+  fi
+
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
   shift
