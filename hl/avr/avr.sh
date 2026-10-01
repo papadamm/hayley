@@ -22,6 +22,24 @@ hl_query_top ()
   fi
 }
 
+emit_asm ()
+{
+cat <<EOF
+  .text
+  .global vector_table
+  .type vector_table, %function
+vector_table:
+
+  /* TODO: copy .data from __etext to __data_start__ */
+  /* TODO: clear bss, from __bss_start__ to __bss_end__ */
+  /* TODO: deal with stack */
+
+  call main
+
+end:
+  rjmp end
+EOF
+}
 
 emit_ldscript ()
 {
@@ -118,10 +136,13 @@ if [ "$1" == "link" ]; then
   MEMORY_BASE=`hl_query_top get-memory-base`
   MEMORY_SIZE=`hl_query_top get-memory-size`
 
+  emit_asm | ${HL_CROSS_COMPILE}gcc -E - > "${t0}"
+  cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
+                                 -x assembler -c - -o "${t1}"
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
   shift
-  ${HL_CROSS_COMPILE}ld "-T${t2}" $@ -o "${t0}"
+  ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
   ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
   cat "${t1}" # the contents come out on stdout
   exit 0 # done with link command
