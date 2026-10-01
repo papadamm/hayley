@@ -6,6 +6,7 @@ hl_qry ()
   case "$1" in
     get-asmflags) echo -march=armv7e-m -mlittle-endian ;;
     get-cflags) echo -march=armv7e-m -mlittle-endian ;;
+    get-arm-vector-table-needed) echo yes ;;
     get-next) echo arm-32bit.sh ;;
   esac
 }

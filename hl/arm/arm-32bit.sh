@@ -24,6 +24,8 @@ hl_query_top ()
 
 emit_asm ()
 {
+
+if [ "`hl_query_top get-arm-vector-table-needed`" == "yes" ] ; then
 cat <<EOF
   .syntax unified
 
@@ -32,6 +34,11 @@ vector_table:
   .long 0 /* Top of stack set to nothing since unused */
   .long _start
   .space 126 * 4
+EOF
+fi
+
+cat <<EOF
+  .syntax unified
 
   .align 1
   .global _start
@@ -87,9 +94,14 @@ MEMORY
   FLASH (rx) : ORIGIN = $1, LENGTH = $2
   RAM (rwx) :  ORIGIN = $3, LENGTH = $4
 }
+EOF
 
-ENTRY(vector_table)
-
+if [ "`hl_query_top get-arm-vector-table-needed`" == "yes" ] ; then
+  echo "ENTRY(vector_table)"
+else
+  echo "ENTRY(_start)"
+fi
+cat <<EOF
 SECTIONS
 {
     .text :
