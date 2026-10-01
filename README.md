@@ -6,7 +6,7 @@ The repository contains some degree of support for the following MCU/SoC (CPU co
 - Nordic nRF52840 (ARM Cortex-M4)
 - Raspberry Pi RP2040 (ARM Cortex-M0+)
 
-As an brief tutorial, start by trying to build the example blink code:
+As a brief tutorial, start by trying to build the example blink code:
 ```console
 % cd examples/blink
 % make
@@ -19,9 +19,10 @@ That's right, we need to select a target board and provide cross compiler inform
 % cd hl
 % # make a copy of the sample file and change it to reflect pca10059
 % cp local-sample.sh local-pca10059.sh
-% # edit pca10059.sh and select nordic/pca10059.sh as target board
-% # also add cross compiler prefix to pca10059.sh
-% # when done, use the script to query information to double check
+% # edit local-pca10059.sh and select nordic/pca10059.sh as target board
+% # also add cross compiler prefix to local-pca10059.sh
+%
+% # when done, use the script to query information to double check that all is well
 % ./local-pca10059.sh get-next
 nordic/pca10059.sh
 % ./local-pca10059.sh get-cross-compile
@@ -29,7 +30,8 @@ arm-none-eabi-
 # check that the correct flash start address is output from nordic/pca10059.sh
 % ./local-pca10059.sh get-flash-base
 0x00001000
-# this is by the way how the Makefile and linker script retrieve information
+% # yes all looks good
+% # this is by the way how the Makefile and linker script retrieve information
 % cd ..
 ```
 
