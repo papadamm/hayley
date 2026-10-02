@@ -143,7 +143,7 @@ if [ "$1" == "link" ]; then
   HL_TARGET_FLAGS=`hl_query_top get-asmflags`
 
   # Probe for required software components
-  for e in cat grep mktemp rm wc which ${HL_CROSS_COMPILE}gcc \
+  for e in cat grep mktemp rm uudecode wc which ${HL_CROSS_COMPILE}gcc \
 	     ${HL_CROSS_COMPILE}ld ${HL_CROSS_COMPILE}objcopy
   do
     if [ -z `which $e` ]; then
@@ -188,31 +188,22 @@ if [ "$1" == "link" ]; then
   cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
                                  -x assembler -c - -o "${t1}"
 
-  # rp2040 needs the first 256 bytes with a checksum
-  # ~/git/pico-sdk/src/rp2040/boot_stage2/pad_checksum -s 0xffffffff
-  HL_RP2040_PAD_CHECKSUM=`hl_query_top get-rp2040-pad-checksum`
-  if [ -n "${HL_RP2040_PAD_CHECKSUM}" ]; then
-    echo running ${HL_RP2040_PAD_CHECKSUM} >&2
-    ${HL_CROSS_COMPILE}objcopy "${t1}" -O binary "${t0}"
-    ${HL_RP2040_PAD_CHECKSUM} -s 0xffffffff "${t0}" "${t1}"
-cat > "${t0}" <<EOF
-  .syntax unified
-
-  .align 1
-  .global _start
-  .type _start, %function
-_start:
-EOF
-    cat "${t1}" | tail -n +8 >> "${t0}"
-    cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
-                                 -x assembler -c - -o "${t1}"
-  fi
-
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
   shift
   ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
-  ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
+
+  # add boot2 code as a prefix (this is needed for rp2040)
+  hl_query_top get-boot2-code > "${t1}"
+  if [ -n "`cat ${t1}`" ]; then
+    cat "${t1}" | uudecode -o "${t2}"
+    ${HL_CROSS_COMPILE}objcopy "${t0}" -O binary "${t1}"
+    cat "${t2}" "${t1}" > "${t0}"
+    ${HL_CROSS_COMPILE}objcopy -I binary "${t0}" -O ihex "${t1}"
+  else
+    ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
+  fi
+
   cat "${t1}" # the contents come out on stdout
   exit 0 # done with link command
 fi
