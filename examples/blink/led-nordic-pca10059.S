@@ -8,12 +8,12 @@ led_setup:
   /* pull the GPIO low to turn on the LED */
 
   movs r0, #0x40 /* 1 << 6 (P0.06) */
-  ldr r5, =0x50000508 /* nRF52840 GPIO OUTSET */
-  str r0, [r5] /* this makes sure the LED remains off */
+  ldr r2, =0x50000508 /* nRF52840 GPIO OUTSET */
+  str r0, [r2] /* this makes sure the LED remains off */
 
   movs r0, #0x03
-  ldr r5, =0x50000718 /* nRF52840 GPIO PIN_CNF[6] (P0.06) */
-  str r0, [r5] /* select output pin function, LED still off */
+  ldr r2, =0x50000718 /* nRF52840 GPIO PIN_CNF[6] (P0.06) */
+  str r0, [r2] /* select output pin function, LED still off */
   bx lr
 
   .global led_off
