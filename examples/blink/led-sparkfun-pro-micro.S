@@ -1,6 +1,26 @@
 #ifdef SPARKFUN_PRO_MICRO /* LED code for Sparfun Pro Micro rp2040 */
   .syntax unified
 
+  /* the "led_setup" and "led_on" functions have previously been */
+  /* verified with a saleae logic logic analyzer, and the reset pulse */
+  /* and the LED data waveform to turn on the LED had timing within */
+  /* the WS2812-2020 spec. for that particular verified piece of code */
+  /* that runs right after reset, have a look at the teeensy repo and */
+  /* the file teeensy-sparkfun-pro-micro-rp2040.sh that does just that. */
+  /*                                                                    */
+  /* now in this code base when running rp2040 with XIP the waveforms */
+  /* act really weird according to same saleae logic (using GPIO26). */
+  /* as an example, even though executing multiple "str r0, [r6]" opcodes */
+  /* in sequence to the XOR alias, the period of high and low never gets */
+  /* close to 50:50, it is closer to 1 us high 60 ns low, not even. */
+  /* without being able to generate accurate low waveforms it is very */
+  /* hard to accurately generate waveforms to turn off the LED within spec. */
+  /* in general this all seems highly unstable, perhaps due to XIP cache */
+  /* or other system configuration that has changed compared to running */
+  /* from the memory at 0x20041f00 for the boot2 code. right now this is */
+  /* all completely out-of-spec, but somehow the LED gets turned on and */
+  /* off anyway, like some sort of miracle. */
+
   .global led_setup
   .type led_setup, %function
 led_setup:
