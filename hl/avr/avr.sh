@@ -141,6 +141,8 @@ if [ "$1" == "link" ]; then
                                  -x assembler -c - -o "${t1}"
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
+  echo "warning: AVR initial setup code incomplete, see TODO in emit_asm()" >&2
+
   shift
   ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
   ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
