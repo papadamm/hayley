@@ -5,7 +5,7 @@ CROSS_COMPILE := $(shell $(HL) get-cross-compile)
 CFLAGS := $(shell $(HL) get-cflags) $(shell $(HL) get-extra-flags)
 ASMFLAGS := $(shell $(HL) get-asmflags)
 LED_OBJ := led-nordic-pca10059.o led-sparkfun-pro-micro.o \
- led-seeeduino-nano.o led-longan-nano.o
+ led-seeeduino-nano.o led-longan-nano.o led-gr-mango.o
 
 %.o: %.S
 	$(CROSS_COMPILE)gcc $(CFLAGS) -E $< | $(CROSS_COMPILE)as $(ASMFLAGS) - -o $@
