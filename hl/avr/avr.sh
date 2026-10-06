@@ -104,7 +104,7 @@ if [ "$1" == "link" ]; then
     fi
   done
 
-  # Check that HL_CROSS_COMPILE actually points to a c compiler for ARM
+  # Check that HL_CROSS_COMPILE actually points to a c compiler for AVR
   ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
 		     -c /dev/null -o /dev/null 2>/dev/null
   if [ $? -ne 0 ]; then
