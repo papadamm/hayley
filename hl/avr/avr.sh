@@ -29,15 +29,71 @@ cat <<EOF
   .global vector_table
   .type vector_table, %function
 vector_table:
+  /* r1 is fixed zero */
+  eor r1, r1
 
-  /* TODO: copy .data from __etext to __data_start__ */
-  /* TODO: clear bss, from __bss_start__ to __bss_end__ */
-  /* TODO: deal with stack */
+  /* copy .data from __etext to __data_start__ */
+  lds r26, local_etext
+  lds r27, local_etext + 1
+  lds r28, local_data_start
+  lds r29, local_data_start + 1
+  lds r30, local_data_end
+  lds r31, local_data_end + 1
 
+  /* Z - Y */
+  sub r30, r28
+  sbc r31, r29
+  breq data_finished
+
+data_next:
+  ld r0, X+
+  st Y+, r0
+  sbiw r30, 1
+  brne data_next
+
+data_finished:
+  /* clear bss, from __bss_start__ to __bss_end__ */
+
+  lds r28, local_bss_start
+  lds r29, local_bss_start + 1
+  lds r30, local_bss_end
+  lds r31, local_bss_end + 1
+
+  /* Z - Y */
+  sub r30, r28
+  sbc r31, r29
+  breq bss_finished
+
+bss_next:
+  st Y+, r1
+  sbiw r30, 1
+  brne bss_next
+
+bss_finished:
+  /* deal with stack */
+  lds r28, local_stack_top
+  lds r29, local_stack_top + 1
+  sbiw r28, 0x02 /* 16-bit PC assumed, 22-bit PC not supported */
+  out 0x3d, r28
+  out 0x3e, r29
   call main
 
 end:
   rjmp end
+
+  .align 2
+local_etext:
+  .word __etext
+local_data_start:
+  .word __data_start__
+local_data_end:
+  .word __data_end__
+local_bss_start:
+  .word __bss_start__
+local_bss_end:
+  .word __bss_end__
+local_stack_top:
+  .word __StackTop
 EOF
 }
 
@@ -140,8 +196,6 @@ if [ "$1" == "link" ]; then
   cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
                                  -x assembler -c - -o "${t1}"
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
-
-  echo "warning: AVR initial setup code incomplete, see TODO in emit_asm()" >&2
 
   shift
   ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
