@@ -1,10 +1,13 @@
 # HAYLEY (C and Assembly build environment for tiny embedded systems)
-HAYLEY is a build environment based on a set of shell scripts together with example code for a couple of microcontrollers. At this point the programming languages C and Assembly for the ARM and AVR architectures are somewhat supported. There is no library support included, so more or less everything has to be created from scratch. What is included however, is linker script and initial ARM code to clear the memory and setup the data segment and stack, so the main() function may be reached after power-on-reset. This is tested on pca10059. There is no interrupt support.
+HAYLEY is a build environment based on a set of shell scripts together with example code for a couple of microcontrollers. The programming languages C and Assembly for ARM, AVR and RISC-V architectures are somewhat supported. There is no library support included, so more or less everything has to be created from scratch. What is included however, is linker script and initial processor setup code to clear the memory and setup the data segment and stack, so the main() function may be reached after power-on-reset.
 
 The repository contains some degree of support for the following MCU/SoC (CPU core) [Instruction set]:
+- GigaDevice gd32vf103 (Nuclei Bumblebee) [RISC-V RV32IMAC]
 - Microchip atmega328p (AVR)
 - Nordic nRF52840 (ARM Cortex-M4)
 - Raspberry Pi RP2040 (ARM Cortex-M0+)
+- Renesas RZ/A2M r7s9210 (ARM Cortex-A9)
+- WCH ch32v003 (QingKe V2A) [RISC-V RV32EC]
 
 As a brief tutorial, start by trying to build the example blink code:
 ```console
@@ -14,7 +17,7 @@ Makefile:2: *** Unable to parse HL environment variable.  Stop.
 % cd ../..
 ```
 
-That's right, we need to select a target board and provide cross compiler information before build is possible:
+That's right, we need to select a target board and provide cross compiler information before build is possible. In this case the Nordic pca10059 target platform is selected which is based on the nRF52840 microcontroller that in turn includes an ARM Cortex-M4 processor core:
 ```console
 % cd hl
 % # make a copy of the sample file and change it to reflect pca10059
@@ -30,12 +33,12 @@ arm-none-eabi-
 # check that the correct flash start address is output from nordic/pca10059.sh
 % ./local-pca10059.sh get-flash-base
 0x00001000
-% # yes all looks good
-% # this is by the way how the Makefile and linker script retrieve information
+# yes all looks good
+# this is by the way how the Makefile and linker script retrieve information
 % cd ..
 ```
 
-If you wanted to build for another ARM platform, you could probably use the same cross toolchain but select a different board like sparkfun/sparkfun-pro-micro.sh. Having a bunch of different local files for a range of target systems would make sense here. Have a look at the the different get-asmflags and get-flags for ARM Cortex M4 and ARM Cortex-M0plus in the arm/ directory if you want details.
+If you wanted to build for another ARM platform, you could probably use the same cross toolchain but select a different board like sparkfun/sparkfun-pro-micro.sh. Having a bunch of different local files for a range of target systems would make sense here. Have a look at the the different get-asmflags and get-flags for various ARM processor cores in the arm/ directory if you want details.
 
 Retry building the blink code (now with HL):
 ```console
