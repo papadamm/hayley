@@ -84,6 +84,7 @@ SECTIONS
     {
         *(.text*)
         *(.rodata*)
+        *(.srodata*)
     } > FLASH
 
     . = ALIGN(4);
@@ -93,6 +94,7 @@ SECTIONS
     {
         __data_start__ = .;
         *(.data*)
+        *(.sdata*)
 	__data_end__ = .;
     } > RAM
 
@@ -101,6 +103,7 @@ SECTIONS
         . = ALIGN(4);
         __bss_start__ = .;
         *(.bss*)
+        *(.sbss*)
         *(COMMON)
         . = ALIGN(4);
         __bss_end__ = .;
