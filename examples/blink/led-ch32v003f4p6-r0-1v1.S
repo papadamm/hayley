@@ -16,16 +16,16 @@ led_setup:
   .global led_off
   .type led_off, %function
 led_off:
-  li t0, 1 << 16 /* clear GPIO output to 0 */
+  li t0, 1 << 0 /* set GPIO output to 1 */
   li t1, 0x40011010 /* R32_GPIOC_BSHR */
-  sw t0, 0(t1) /* set GPIO output to 0 */
+  sw t0, 0(t1) /* set GPIO output to 1 */
   ret
 
   .global led_on
   .type led_on, %function
 led_on:
-  li t0, 1 << 0 /* set GPIO output to 1 */
+  li t0, 1 << 16 /* clear GPIO output to 0 */
   li t1, 0x40011010 /* R32_GPIOC_BSHR */
-  sw t0, 0(t1) /* set GPIO output to 1 */
+  sw t0, 0(t1) /* set GPIO output to 0 */
   ret
 #endif
