@@ -9,13 +9,16 @@ __weak char uart_rx(void) { return 'X'; }
 char line_buf[LINE_MAXCHARS];
 unsigned int line_pos = 0;
 
+const char message[] = { 'h', 'e', 'l', 'l', 'o' };
+
 static void print_state(void)
 {
-  uart_tx('h');
-  uart_tx('e');
-  uart_tx('l');
-  uart_tx('l');
-  uart_tx('o');
+  int k;
+
+  for (k = 0; k < sizeof(message); k++) {
+    uart_tx(message[k]);
+  }
+
   uart_tx('\r');
   uart_tx('\n');
 }
