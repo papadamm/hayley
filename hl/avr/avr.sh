@@ -98,7 +98,7 @@ bss_finished:
   sbiw r24, 0x02 /* 16-bit PC assumed, 22-bit PC not supported */
   out 0x3d, r24 /* SPL (low) */
   out 0x3e, r25 /* SPH (high) */
-  call main
+  rcall main
 
 end:
   rjmp end
