@@ -5,8 +5,8 @@ hl_qry ()
 {
   case "$1" in
     get-asmflags) echo -mmcu=atmega48 ;;
-    get-cflags) echo -mmcu=atmega48 ;;
-    get-flash-base) echo 0x00000000 ;;
+    get-cflags) echo -mmcu=atmega48 -mshort-calls ;;
+    get-flash-base) echo 0x00004000 ;;
     get-flash-size) echo 0x0000c000 ;;
     get-memory-base) echo 0x00002800 ;;
     get-memory-size) echo 0x00001800 ;;

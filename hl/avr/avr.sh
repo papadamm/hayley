@@ -45,7 +45,7 @@ _start:
 
   /* copy .data from __etext to __data_start__ */
   clr r31 /* clear Z high byte */
-  ldi r30, local_setup_data /* Z low byte */
+  ldi r30, 0x02 /* (local_setup_data) Z low byte */
 
   lpm r24, Z+ /* __data_end__ (low) */
   lpm r25, Z+ /* __data_end__ + 1 (high) */
@@ -105,7 +105,7 @@ end:
 EOF
 }
 
-emit_ldscript ()
+emit_ldscript_harvard ()
 {
 cat <<EOF
 SEARCH_DIR(.)
@@ -132,6 +132,53 @@ SECTIONS
     {
         __data_start__ = .;
         *(.rodata*)
+        *(.data*)
+	__data_end__ = .;
+    } > RAM
+
+    .bss :
+    {
+        . = ALIGN(4);
+        __bss_start__ = .;
+        *(.bss*)
+        *(COMMON)
+        . = ALIGN(4);
+        __bss_end__ = .;
+    } > RAM
+
+    __StackTop = ORIGIN(RAM) + LENGTH(RAM);
+    PROVIDE(__stack = __StackTop);
+}
+EOF
+}
+
+emit_ldscript_unified ()
+{
+cat <<EOF
+SEARCH_DIR(.)
+
+MEMORY
+{
+  FLASH (rx) : ORIGIN = $1, LENGTH = $2
+  RAM (rwx) :  ORIGIN = $3, LENGTH = $4
+}
+
+ENTRY(vector_table)
+
+SECTIONS
+{
+    .text :
+    {
+        *(.text*)
+        *(.rodata*)
+    } > FLASH
+
+    . = ALIGN(4);
+    __etext = .;
+
+    .data : AT (__etext)
+    {
+        __data_start__ = .;
         *(.data*)
 	__data_end__ = .;
     } > RAM
@@ -201,18 +248,50 @@ if [ "$1" == "link" ]; then
   MEMORY_BASE=`hl_query_top get-memory-base`
   MEMORY_SIZE=`hl_query_top get-memory-size`
 
+  if [ "${FLASH_BASE}" == 0x00004000 ]; then
+    # a flash base set to 0x4000 indicates a newer device with unified
+    # memory where code space flash may be accessed via the data space
+    # for such devices we put the .text and .rodata together at 0x4000
+    # the reset vector is still at the beginning of flash memory which
+    # is mapped at 0x0000 in code space. our initial code will work as
+    # expected regardless since it is written to be position independent
+    # the C code must be built with relative jumps (-mshort-calls)
+    # large amounts of code and constant data may be stored in flash
+    # data is copied to memory during boot and bss is cleared as usual
+    # before generating the hex output file the 0x4000 offset needs to
+    # be reset back to 0x0000 to prevent the programming software to
+    # burn at offset 0x4000. instead it should be programmed at 0x0000
+    # like any good old legacy code space flash data
+
+    emit_ldscript_unified $FLASH_BASE $FLASH_SIZE \
+                          $MEMORY_BASE $MEMORY_SIZE > "${t2}"
+  else
+    # on older devices (like atmega328p) the flash will start from 0x0000
+    # for such devices the code space and data space are strictly separated
+    # if present the .rodata section will be placed in on-chip memory
+    # which is highly inefficient for constant data since the amount of
+    # constant data will unfortunately be limited by available on-chip memory
+
+    emit_ldscript_harvard $FLASH_BASE $FLASH_SIZE \
+                          $MEMORY_BASE $MEMORY_SIZE > "${t2}"
+  fi
+
   emit_asm | ${HL_CROSS_COMPILE}gcc -E - > "${t0}"
   cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
                                  -x assembler -c - -o "${t1}"
-  emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
   shift
   ${HL_CROSS_COMPILE}ld "-T${t2}" "-Map=${t3}" "${t1}" $@ -o "${t0}"
-  if [ `cat ${t3} | grep "^ .rodata" | wc -l` -ne 0 ]; then
+  if [ "${FLASH_BASE}" == 0x00004000 ]; then
+    ${HL_CROSS_COMPILE}objcopy --change-section-address=.text=0 \
+                               "${t0}" -O ihex "${t1}"
+  else
+    if [ `cat ${t3} | grep "^ .rodata" | wc -l` -ne 0 ]; then
       echo "Warning: unoptimized AVR .rodata section placement" >&2
+    fi
+    ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
   fi
 
-  ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
   cat "${t1}" # the contents come out on stdout
   exit 0 # done with link command
 fi
