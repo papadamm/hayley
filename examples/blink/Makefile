@@ -6,7 +6,7 @@ CFLAGS := $(shell $(HL) get-cflags) $(shell $(HL) get-extra-flags)
 ASMFLAGS := $(shell $(HL) get-asmflags)
 LED_OBJ := led-nordic-pca10059.o led-sparkfun-pro-micro.o \
  led-seeeduino-nano.o led-longan-nano.o led-gr-mango.o \
- led-ch32v003f4p6-r0-1v1.o
+ led-ch32v003f4p6-r0-1v1.o led-arduino-nano-every.o
 
 %.o: %.S
 	$(CROSS_COMPILE)gcc $(CFLAGS) -E $< | $(CROSS_COMPILE)as $(ASMFLAGS) - -o $@
