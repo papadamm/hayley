@@ -9,6 +9,7 @@ The repository contains some degree of support for the following MCU/SoC (CPU co
 - Raspberry Pi RP2040 (ARM Cortex-M0+)
 - Renesas RZ/A2M r7s9210 (ARM Cortex-A9)
 - WCH ch32v003 (QingKe V2A) [RISC-V RV32EC]
+- WCH ch32v203 (QingKe V4B) [RISC-V RV32IMAC]
 
 As a brief tutorial, start by trying to build the example blink code:
 ```console
