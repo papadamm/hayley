@@ -9,23 +9,24 @@ led_setup:
   li t1, 0x40021018 /* RCC_APB2PCENR */
   sw t0, 0(t1)
 
-  li t0, 0x44444446 /* MODE0[1:0], CNF0[1:0] setup, others reset default */
+  li t0, 0x44444446 /* MODE0[1:0], CNF0[1:0] PC0 setup, others reset default */
   li t1, 0x40011000 /* R32_GPIOC_CFGLR */
   sw t0, 0(t1)
+  ret
 
   .global led_off
   .type led_off, %function
 led_off:
-  li t0, 1 << 0 /* set GPIO output to 1 */
+  li t0, 1 << (0 + 0) /* lower 16 bits: set GPIO output to 1 */
   li t1, 0x40011010 /* R32_GPIOC_BSHR */
-  sw t0, 0(t1) /* set GPIO output to 1 */
+  sw t0, 0(t1)
   ret
 
   .global led_on
   .type led_on, %function
 led_on:
-  li t0, 1 << 16 /* clear GPIO output to 0 */
+  li t0, 1 << (0 + 16) /* upper 16 bits: clear GPIO output to 0 */
   li t1, 0x40011010 /* R32_GPIOC_BSHR */
-  sw t0, 0(t1) /* set GPIO output to 0 */
+  sw t0, 0(t1)
   ret
 #endif
