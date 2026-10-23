@@ -3,7 +3,8 @@ HAYLEY is a build environment based on a set of shell scripts together with exam
 
 The repository contains some degree of support for the following MCU/SoC (CPU core) [Instruction set]:
 - GigaDevice gd32vf103 (Nuclei Bumblebee) [RISC-V RV32IMAC]
-- Microchip atmega328p (AVR)
+- Microchip atmega328p (AVR AVRe+)
+- Microchip atmega4809 (AVR AVRxt)
 - Nordic nRF52840 (ARM Cortex-M4)
 - Raspberry Pi RP2040 (ARM Cortex-M0+)
 - Renesas RZ/A2M r7s9210 (ARM Cortex-A9)
