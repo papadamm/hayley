@@ -6,7 +6,7 @@ extern void led_off(void);
 
 static void silly_delay(uint32_t value)
 {
-  int i;
+  uint32_t i;
 
   for (i = 0; i < value; i++) {
     __asm ("nop");

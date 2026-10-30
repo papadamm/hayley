@@ -8,7 +8,7 @@ __weak void led_off(void) {}
 
 static void silly_delay(uint32_t value)
 {
-  int i;
+  uint32_t i;
 
   for (i = 0; i < value; i++) {
     __asm ("nop");
@@ -17,7 +17,7 @@ static void silly_delay(uint32_t value)
 
 static void blink_forever(int n)
 {
-  int k;
+  uint32_t k;
 
   while (1) {
     led_on();
