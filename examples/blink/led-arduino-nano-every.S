@@ -10,16 +10,14 @@ led_setup:
   .global led_off
   .type led_off, %function
 led_off:
-  /* set bit 2 in PORTE.OUTCLR to set PE02 low (and turn off LED) */
-  ldi r18, 1 << 2 /* bit 2 from PE02 */
-  sts 0x0486 ,r18 /* PORTE.OUTCLR */
+  /* clear bit 2 in VPORTE.OUT to set PE02 low (and turn off LED) */
+  cbi 0x0011, 2 /* clear bit 2 in VPORTE.OUT (faster than set PORTE.OUTCLR) */
   ret
 
   .global led_on
   .type led_on, %function
 led_on:
-  /* set bit 2 in PORTE.OUTSET to set PE02 high (and turn on LED) */
-  ldi r18, 1 << 2 /* bit 2 from PE02 */
-  sts 0x0485 ,r18 /* PORTE.OUTSET */
+  /* set bit 2 in VPORTE.OUT to set PE02 high (and turn on LED) */
+  sbi 0x0011, 2 /* set bit 2 in VPORTE.OUT (faster than set PORTE.OUTSET) */
   ret
 #endif
