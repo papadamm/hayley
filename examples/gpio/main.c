@@ -6,6 +6,10 @@
 #define LED_GPIO_PIN GPIO_ATMEGA4809(GPIO_PORTE, 2)
 #endif
 
+#ifdef CH32V203C8T6_R0_1V0
+#define LED_GPIO_PIN GPIO_CH32V(GPIO_PORTC, 13)
+#endif
+
 #ifndef LED_GPIO_PIN
 #define LED_GPIO_PIN GPIO_NONE
 #endif
