@@ -27,38 +27,39 @@
 /* once packed data has been verified to be unchanged we no longer need to  */
 /* repeat the pack and flush sequence and we can consider ourselves done    */
 
-struct occ_pack_flush_head {
+struct occ_pack_flush_head;
+
+struct occ_pack_flush_ops {
+  void (*init)(struct occ_pack_flush_head *);
   void (*pack)(struct occ_pack_flush_head *, void *pack);
   void (*flush)(struct occ_pack_flush_head *, void *pack);
   int (*has_changed)(struct occ_pack_flush_head *,
                      void *pack_a, void *pack_b);
 };
 
-typedef struct occ_pack_flush_head occ_pack_flush_head_t;
+typedef struct occ_pack_flush_head {
+  struct occ_pack_flush_ops *ops;
+} occ_pack_flush_head_t;
 
 static inline void
-occ_pack_flush_init(occ_pack_flush_head_t *c,
-                   void (*init)(occ_pack_flush_head_t *),
-                   void (*pack)(occ_pack_flush_head_t *, void *),
-                   void (*flush)(occ_pack_flush_head_t *, void *),
-                   int (*has_changed)(occ_pack_flush_head_t *, void *, void *))
+occ_pack_flush_init(occ_pack_flush_head_t *c, struct occ_pack_flush_ops *ops)
 {
-  c->pack = pack; /* perform pack of unpacked data and store it into pack */
-  c->flush = flush; /* flush the packed data passed in pack */
-  c->has_changed = has_changed; /* check if pack_a and pack_b are different */
-  init(c); /* read out initial packed state and setup unpacked data */
+  c->ops = ops;
+  ops->init(c);
 }
 
 static inline void
 occ_pack_flush(occ_pack_flush_head_t *c, void *pack_a, void *pack_b)
 {
-  do {
-    c->pack(c, pack_a);
-    c->flush(c, pack_a);
+  struct occ_pack_flush_ops *ops = c->ops;
 
-    c->pack(c, pack_b);
-    c->flush(c, pack_b);
-  } while (c->has_changed(c, pack_a, pack_b));
+  do {
+    ops->pack(c, pack_a);
+    ops->flush(c, pack_a);
+
+    ops->pack(c, pack_b);
+    ops->flush(c, pack_b);
+  } while (ops->has_changed(c, pack_a, pack_b));
 }
 
 #endif /*__OCC_PACK_FLUSH_H__ */

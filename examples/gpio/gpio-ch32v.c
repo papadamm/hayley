@@ -111,14 +111,18 @@ void gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
   }
 }
 
+struct occ_pack_flush_ops gpio_ch32_occ_pack_flush_ops = {
+  .init = gpio_ch32v_occ_init,
+  .pack = gpio_ch32v_occ_pack,
+  .flush = gpio_ch32v_occ_flush,
+  .has_changed = gpio_ch32v_occ_has_changed,
+};
 
 static void gpio_ch32v_init_occ_one(gpio_ch32v_cfg_unpacked_t *cfg,
                                     gpio_ch32v_port_pin_t pp)
 {
   cfg->pp = pp;
-  occ_pack_flush_init(&cfg->head,
-                      gpio_ch32v_occ_init, gpio_ch32v_occ_pack,
-                      gpio_ch32v_occ_flush, gpio_ch32v_occ_has_changed);
+  occ_pack_flush_init(&cfg->head, &gpio_ch32_occ_pack_flush_ops);
 }
 
 static void gpio_ch32v_init_cfglr_cfghr(gpio_port_pin_t gpio_cfglr,
