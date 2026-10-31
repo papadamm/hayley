@@ -34,12 +34,13 @@ static inline void
 gpio_ch32v_set_value(const gpio_ch32v_port_pin_t pp,
 		     const int value)
 {
-  volatile uint32_t *port = gpio_ch32v_enum_to_port[pp.port] + 0x10; /* BSHR */
+  volatile uint32_t *port_set = gpio_ch32v_enum_to_port[pp.port] + 0x10; /* BSHR */
+  volatile uint32_t *port_clr = gpio_ch32v_enum_to_port[pp.port] + 0x14; /* BCR */
 
   if (value) {
-    *port = 1 << pp.pin;
+    *port_set = 1 << pp.pin;
   } else {
-    *port = 1 << (pp.pin + 16);
+    *port_clr = 1 << pp.pin;
   }
 }
 
