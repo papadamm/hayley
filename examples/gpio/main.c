@@ -10,13 +10,9 @@
 #define LED_GPIO_PIN GPIO_NONE
 #endif
 
-static void led_flash(void)
+void led_setup(void)
 {
-  gpio_seq_run(GPIO_SEQ_PINS( LED_GPIO_PIN ),
-               GPIO_SEQ_OPCODES( SEQ_CLEAR(0), SEQ_SET(0),
-                                 SEQ_CLEAR(0), SEQ_SET(0),
-                                 SEQ_CLEAR(0), SEQ_SET(0),
-                                 SEQ_CLEAR(0), SEQ_SET(0) ), 0, 0);
+  gpio_set_direction(LED_GPIO_PIN, GPIO_DIR_OUTPUT);
 }
 
 void led_on_set_value(void)
@@ -41,6 +37,15 @@ void led_off_seq(void)
 	       GPIO_SEQ_OPCODES( SEQ_CLEAR(0) ), 0, 0);
 }
 
+void led_flash(void)
+{
+  gpio_seq_run(GPIO_SEQ_PINS( LED_GPIO_PIN ),
+               GPIO_SEQ_OPCODES( SEQ_CLEAR(0), SEQ_SET(0),
+                                 SEQ_CLEAR(0), SEQ_SET(0),
+                                 SEQ_CLEAR(0), SEQ_SET(0),
+                                 SEQ_CLEAR(0), SEQ_SET(0) ), 0, 0);
+}
+
 static void silly_delay(uint32_t value)
 {
   uint32_t i;
@@ -49,8 +54,6 @@ static void silly_delay(uint32_t value)
     asm volatile ("nop");
   }
 }
-
-extern void led_setup(void);
 
 int main(void)
 {

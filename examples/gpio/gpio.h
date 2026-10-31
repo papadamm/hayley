@@ -1,6 +1,8 @@
 #ifndef __GPIO_H__
 #define __GPIO_H__
 
+typedef enum { GPIO_DIR_INPUT, GPIO_DIR_OUTPUT } gpio_direction_t;
+
 // gpio headers for all supported systems are included here
 #include "gpio-atmega4809.h"
 
@@ -30,6 +32,15 @@ static inline int gpio_get_value(const gpio_port_pin_t pp)
   int value = -1;
   value == -1 ? value = gpio_atmega4809_get_value(pp.u.atmega4809) : value;
   return value;
+}
+
+// function to set GPIO direction (select between GPIO input or output)
+// this simply goes through all the implementations
+// the compiler will exclude not needed variants
+static inline void gpio_set_direction(const gpio_port_pin_t pp,
+                                      const gpio_direction_t dir)
+{
+  gpio_atmega4809_set_direction(pp.u.atmega4809, dir);
 }
 
 // the GPIO implementation comes with a sequencer

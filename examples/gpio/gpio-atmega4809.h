@@ -57,13 +57,17 @@ static void *gpio_atmega4809_enum_to_vport[] = {
 };
 
 static inline void
-gpio_atmega4809_set_value(const gpio_atmega4809_port_pin_t pp, const int value)
+gpio_atmega4809_vport_port_set(const gpio_atmega4809_port_pin_t pp,
+			       const int value,
+			       const int vport_offs,
+			       const int port_set_offs,
+			       const int port_clr_offs)
 {
   volatile uint8_t *port;
 
   /* use atomic bitops on VPORT whenever possible */
   if (__builtin_constant_p(pp.port) && __builtin_constant_p(pp.pin)) {
-    port = gpio_atmega4809_enum_to_vport[pp.port] + 0x01; /* VPORT.OUT */
+    port = gpio_atmega4809_enum_to_vport[pp.port] + vport_offs;
 
     if (value) {
       vport_sbi(port, pp.pin);
@@ -75,13 +79,20 @@ gpio_atmega4809_set_value(const gpio_atmega4809_port_pin_t pp, const int value)
     port = gpio_atmega4809_enum_to_port[pp.port];
 
     if (value) {
-      port += 0x05; /* PORT.OUTSET */
+      port += port_set_offs;
     } else {
-      port += 0x06; /* PORT.OUTCLR */
+      port += port_clr_offs;
     }
 
     *port = 1 << pp.pin;
   }
+}
+
+static inline void
+gpio_atmega4809_set_value(const gpio_atmega4809_port_pin_t pp, const int value)
+{
+  /* atomic data register access with VPORT.OUT, PORT.OUTSET and PORT.OUTCLR */
+  gpio_atmega4809_vport_port_set(pp, value, 0x01, 0x05, 0x06);
 }
 
 static inline int
@@ -103,6 +114,14 @@ gpio_atmega4809_get_value(const gpio_atmega4809_port_pin_t pp)
   return (value >> pp.pin) & 0x01;
 }
 
+static inline void
+gpio_atmega4809_set_direction(const gpio_atmega4809_port_pin_t pp,
+                              const gpio_direction_t dir)
+{
+  /* atomic direction reg access with VPORT.DIR, PORT.DIRSET and PORT.DIRCLR */
+  gpio_atmega4809_vport_port_set(pp, dir == GPIO_DIR_OUTPUT ? 1 : 0,
+                                 0x00, 0x01, 0x02);
+}
 
 #else /* ARDUINO_NANO_EVERY */
 
@@ -116,6 +135,10 @@ gpio_atmega4809_set_value(const gpio_atmega4809_port_pin_t pp,
 			  const int value) {}
 static inline int
 gpio_atmega4809_get_value(const gpio_atmega4809_port_pin_t pp) { return -1; }
+
+static inline void
+gpio_atmega4809_set_direction(const gpio_atmega4809_port_pin_t pp,
+                              const gpio_direction_t dir) {}
 
 #endif /* ARDUINO_NANO_EVERY */
 
