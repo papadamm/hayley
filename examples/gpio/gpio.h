@@ -5,11 +5,13 @@ typedef enum { GPIO_DIR_INPUT, GPIO_DIR_OUTPUT } gpio_direction_t;
 
 // gpio headers for all supported systems are included here
 #include "gpio-atmega4809.h"
+#include "gpio-ch32v.h"
 
 typedef struct {
   union {
     // a list of private per-uC definitions of how to describe a GPIO
     gpio_atmega4809_port_pin_t atmega4809;
+    gpio_ch32v_port_pin_t ch32v;
     // make the structure at least 1 byte large to avoid div-by-zero
     uint8_t something_rather_than_nothing;
   } u;
@@ -22,6 +24,7 @@ static inline void gpio_set_value(const gpio_port_pin_t pp,
                                   const int value)
 {
   gpio_atmega4809_set_value(pp.u.atmega4809, value);
+  gpio_ch32v_set_value(pp.u.ch32v, value);
 }
 
 // function to get GPIO value (read the state of a GPIO pin)
@@ -31,6 +34,7 @@ static inline int gpio_get_value(const gpio_port_pin_t pp)
 {
   int value = -1;
   value == -1 ? value = gpio_atmega4809_get_value(pp.u.atmega4809) : value;
+  value == -1 ? value = gpio_ch32v_get_value(pp.u.ch32v) : value;
   return value;
 }
 
@@ -41,6 +45,7 @@ static inline void gpio_set_direction(const gpio_port_pin_t pp,
                                       const gpio_direction_t dir)
 {
   gpio_atmega4809_set_direction(pp.u.atmega4809, dir);
+  gpio_ch32v_set_direction(pp.u.ch32v, dir);
 }
 
 // the GPIO implementation comes with a sequencer
