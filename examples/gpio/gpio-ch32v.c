@@ -94,13 +94,13 @@ static int gpio_ch32v_occ_has_changed(struct occ_pack_flush_head *head,
 }
 
 
-void gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
-			      const gpio_direction_t dir)
+void gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
+			 const gpio_mode_t mode)
 {
   gpio_ch32v_cfg_packed_t packed_a, packed_b;
   uint8_t value;
 
-  if (dir == GPIO_DIR_OUTPUT) {
+  if (mode == GPIO_MODE_OUTPUT) {
     value = 0x6;
   } else {
     value = 0x4;

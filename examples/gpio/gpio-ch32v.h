@@ -53,8 +53,8 @@ gpio_ch32v_get_value(const gpio_ch32v_port_pin_t pp)
 }
 
 extern void
-gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
-                         const gpio_direction_t dir);
+gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
+                    const gpio_mode_t mode);
 
 extern void gpio_ch32v_init(void);
 
@@ -72,8 +72,8 @@ static inline int
 gpio_ch32v_get_value(const gpio_ch32v_port_pin_t pp) { return -1; }
 
 static inline void
-gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
-                         const gpio_direction_t dir) {}
+gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
+                    const gpio_mode_t mode) {}
 
 static inline void gpio_ch32v_init(void) {}
 

@@ -2,6 +2,7 @@
 #define __GPIO_H__
 
 typedef enum { GPIO_DIR_INPUT, GPIO_DIR_OUTPUT } gpio_direction_t;
+typedef enum { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_FUNCTION } gpio_mode_t;
 
 // gpio headers for all supported systems are included here
 #include "gpio-atmega4809.h"
@@ -38,14 +39,24 @@ static inline int gpio_get_value(const gpio_port_pin_t pp)
   return value;
 }
 
-// function to set GPIO direction (select between GPIO input or output)
+// function to set GPIO mode (select between GPIO input, output or function)
 // this simply goes through all the implementations
 // the compiler will exclude not needed variants
+static inline void gpio_set_mode(const gpio_port_pin_t pp, const gpio_mode_t mode)
+{
+  gpio_atmega4809_set_mode(pp.u.atmega4809, mode);
+  gpio_ch32v_set_mode(pp.u.ch32v, mode);
+}
+
+// function to set GPIO direction (select between GPIO input or output)
 static inline void gpio_set_direction(const gpio_port_pin_t pp,
                                       const gpio_direction_t dir)
 {
-  gpio_atmega4809_set_direction(pp.u.atmega4809, dir);
-  gpio_ch32v_set_direction(pp.u.ch32v, dir);
+  if (dir == GPIO_DIR_OUTPUT) {
+    gpio_set_mode(pp, GPIO_MODE_OUTPUT);
+  } else {
+    gpio_set_mode(pp, GPIO_MODE_INPUT);
+  }
 }
 
 // the GPIO implementation comes with a sequencer
