@@ -18,6 +18,15 @@ typedef struct {
   } u;
 } gpio_port_pin_t;
 
+typedef struct {
+  union {
+    // a list of private per-uC definitions of detailed mode settings
+    gpio_ch32v_mode_detail_t ch32v;
+    // make the structure at least 1 byte large to avoid div-by-zero
+    uint8_t something_rather_than_nothing;
+  } u;
+} gpio_mode_detail_t;
+
 // function to set a GPIO to a certain value (write the state of a GPIO pin)
 // this simply goes through all the implementations
 // the compiler will exclude not needed variants
@@ -46,6 +55,15 @@ static inline void gpio_set_mode(const gpio_port_pin_t pp, const gpio_mode_t mod
 {
   gpio_atmega4809_set_mode(pp.u.atmega4809, mode);
   gpio_ch32v_set_mode(pp.u.ch32v, mode);
+}
+
+// function to set GPIO mode detail (provide more detailed information)
+// this simply goes through all the implementations
+// the compiler will exclude not needed variants
+static inline void gpio_set_mode_detail(const gpio_port_pin_t pp,
+                                        const gpio_mode_detail_t detail)
+{
+  gpio_ch32v_set_mode_detail(pp.u.ch32v, detail.u.ch32v);
 }
 
 // function to set GPIO direction (select between GPIO input or output)
