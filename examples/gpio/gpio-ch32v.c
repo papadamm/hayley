@@ -32,9 +32,13 @@ static gpio_ch32v_cfg_unpacked_t gpio_ch32v_cfghr_occ[] = {
   [GPIO_PORTF] = {},
 };
 
+#define head_to_unpacked(h) \
+  (gpio_ch32v_cfg_unpacked_t *) \
+  ((void *)(h) - __builtin_offsetof(gpio_ch32v_cfg_unpacked_t, head))
+
 static void gpio_ch32v_occ_init(struct occ_pack_flush_head *head)
 {
-  gpio_ch32v_cfg_unpacked_t *cfg = (void *)head;
+  gpio_ch32v_cfg_unpacked_t *cfg = head_to_unpacked(head);
   uint32_t packed;
   int k;
 
@@ -56,8 +60,8 @@ static void gpio_ch32v_occ_init(struct occ_pack_flush_head *head)
 
 static void gpio_ch32v_occ_pack(struct occ_pack_flush_head *head, void *pack_out)
 {
-  gpio_ch32v_cfg_unpacked_t *cfg = (void *)head;
-  uint32_t *packed_ptr = (uint32_t *)pack_out;
+  gpio_ch32v_cfg_unpacked_t *cfg = head_to_unpacked(head);
+  uint32_t *packed_ptr = pack_out;
   uint32_t packed;
   int k;
 
@@ -73,8 +77,8 @@ static void gpio_ch32v_occ_pack(struct occ_pack_flush_head *head, void *pack_out
 
 static void gpio_ch32v_occ_flush(struct occ_pack_flush_head *head, void *pack_in)
 {
-  gpio_ch32v_cfg_unpacked_t *cfg = (void *)head;
-  uint32_t *packed_ptr = (uint32_t *)pack_in;
+  gpio_ch32v_cfg_unpacked_t *cfg = head_to_unpacked(head);
+  uint32_t *packed_ptr = pack_in;
 
   /* write to hardware CFGxR register (a single 32-bit write access) */
   *cfg->port = *packed_ptr;
