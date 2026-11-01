@@ -8,10 +8,14 @@
 
 #ifdef CH32V003F4P6_R0_1V1
 #define LED_GPIO_PIN GPIO_CH32V(GPIO_PORTC, 0)
+#define LED_GPIO_PIN_MODE_DETAIL \
+  GPIO_MODE_DETAIL_CH32V(GPIO_PUSH_PULL_OUTPUT_MODE)
 #endif
 
 #ifdef CH32V203C8T6_R0_1V0
 #define LED_GPIO_PIN GPIO_CH32V(GPIO_PORTC, 13)
+#define LED_GPIO_PIN_MODE_DETAIL \
+  GPIO_MODE_DETAIL_CH32V(GPIO_PUSH_PULL_OUTPUT_MODE)
 #endif
 
 #ifndef LED_GPIO_PIN
@@ -20,7 +24,13 @@
 
 void led_setup(void)
 {
+#ifdef LED_GPIO_PIN_MODE_DETAIL
+  /* first provide detail, then use gpio_set_mode() to set the actual mode */
+  gpio_set_mode_detail(LED_GPIO_PIN, LED_GPIO_PIN_MODE_DETAIL);
+  gpio_set_mode(LED_GPIO_PIN, GPIO_MODE_OUTPUT);
+#else
   gpio_set_direction(LED_GPIO_PIN, GPIO_DIR_OUTPUT);
+#endif
 }
 
 void led_on_set_value(void)

@@ -20,11 +20,30 @@ typedef struct {
   }
 
 typedef struct {
+  enum { GPIO_ANALOG_INPUT_MODE,
+         GPIO_FLOATING_INPUT_MODE,
+         GPIO_MODE_WITH_PULL_UP_AND_PULL_DOWN,
+         GPIO_PUSH_PULL_OUTPUT_MODE,
+         GPIO_OPEN_DRAIN_OUTPUT_MODE,
+         GPIO_FUNC_PUSH_PULL_OUTPUT_MODE,
+         GPIO_FUNC_DRAIN_OUTPUT_MODE,
+         GPIO_MODE_RAW_INPUT,
+         GPIO_MODE_RAW_OUTPUT,
+         GPIO_MODE_RAW_FUNCTION } mode_detail;
+  uint8_t raw_cnf_mode;
 } gpio_ch32v_mode_detail_t;
+
 
 #define GPIO_MODE_DETAIL_CH32V(detail) \
   (gpio_mode_detail_t) \
-  { .u.ch32v = (gpio_ch32v_mode_detail_t) detail \
+  { .u.ch32v = (gpio_ch32v_mode_detail_t) \
+      { .mode_detail = detail } \
+  }
+
+#define GPIO_MODE_DETAIL_RAW_CH32V(cnf, mode, raw)	\
+  (gpio_mode_detail_t) \
+  { .u.ch32v = (gpio_ch32v_mode_detail_t) \
+      { .mode_detail = mode, .raw_cnf_mode = raw } \
   }
 
 #define __CH32V_GPIO(addr) (void *)(addr)
@@ -64,9 +83,9 @@ extern void
 gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
                     const gpio_mode_t mode);
 
-static inline void
+extern void
 gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
-                           const gpio_ch32v_mode_detail_t detail) {}
+                           const gpio_ch32v_mode_detail_t detail);
 
 extern void gpio_ch32v_init(void);
 
@@ -80,7 +99,8 @@ typedef struct {
 typedef struct {
 } gpio_ch32v_mode_detail_t;
 
-#define GPIO_MODE_DETAIL_CH32V(detail) (gpio_mode_detail_t) {}
+#define GPIO_MODE_DETAIL_CH32V(...) (gpio_mode_detail_t) {}
+#define GPIO_MODE_DETAIL_OUTPUT_CH32V(...) (gpio_mode_detail_t) {}
 
 static inline void
 gpio_ch32v_set_value(const gpio_ch32v_port_pin_t pp,

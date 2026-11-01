@@ -5,9 +5,16 @@
 
 #if defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1)
 
+/* for each GPIO allow 3 settings with index GPIO_MODE_xx */
+/* details may be set with GPIO_MODE_RAW_xxx */
+typedef struct {
+  uint8_t idx;
+  uint8_t data[3];
+} gpio_ch32v_unpacked_per_gpio_data_t;
+
 typedef struct {
   struct occ_pack_flush_head head;
-  uint8_t unpacked_cnf_mode[8]; /* 8 GPIOs per CFGxR register */
+  gpio_ch32v_unpacked_per_gpio_data_t unpacked[8]; /* 8 GPIOs per CFGxR register */
   gpio_ch32v_port_pin_t pp;
   volatile uint32_t *port;
 } gpio_ch32v_cfg_unpacked_t;
@@ -50,10 +57,10 @@ static void gpio_ch32v_occ_init(struct occ_pack_flush_head *head)
 
   /* read from hardware CFGxR register (a single 32-bit read access) */
   packed = *cfg->port;
-
   /* initialize unpacked data structure from hardware */
   for (k = 0; k < 8; k++) {
-    cfg->unpacked_cnf_mode[k] = packed & 0x0f;
+    cfg->unpacked[k].idx = 0;
+    cfg->unpacked[k].data[0] = packed & 0x0f; // FIXME: this needs more work
     packed >>= 4;
   }
 }
@@ -62,14 +69,33 @@ static void gpio_ch32v_occ_pack(struct occ_pack_flush_head *head, void *pack_out
 {
   gpio_ch32v_cfg_unpacked_t *cfg = head_to_unpacked(head);
   uint32_t *packed_ptr = pack_out;
+  gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
+  uint8_t unpacked[8];
   uint32_t packed;
   int k;
+
+  for (k = 0; k < 8; k++) {
+    unpacked_ptr = &cfg->unpacked[k];
+    switch (unpacked_ptr->idx) {
+    case 0:
+      unpacked[k] = unpacked_ptr->data[0];
+      break;
+
+    case 1:
+      unpacked[k] = unpacked_ptr->data[1];
+      break;
+
+    case 2:
+      unpacked[k] = unpacked_ptr->data[2];
+      break;
+    }
+  }
 
   packed = 0;
 
   for (k = 7; k >= 0; k--) {
     packed <<= 4;
-    packed |= cfg->unpacked_cnf_mode[k];
+    packed |= unpacked[k];
   }
 
   *packed_ptr = packed;
@@ -93,24 +119,117 @@ static int gpio_ch32v_occ_has_changed(struct occ_pack_flush_head *head,
   return *packed_ptr_a != *packed_ptr_b;
 }
 
+void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
+				const gpio_ch32v_mode_detail_t detail)
+{
+  uint8_t default_output_bits = 0x1; /* 10 MHz on CH32V003 and CH32V2003 */
+  gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
+  int index = -1; /* default to modifying the input settings */
+  uint8_t cnf_mode;
+
+  if (pp.pin <= 7) {
+    unpacked_ptr = &gpio_ch32v_cfglr_occ[pp.port].unpacked[pp.pin];
+  } else {
+    unpacked_ptr = &gpio_ch32v_cfghr_occ[pp.port].unpacked[pp.pin - 8];
+  }
+
+  switch(detail.mode_detail) {
+  case GPIO_ANALOG_INPUT_MODE:
+    index = GPIO_MODE_INPUT;
+    cnf_mode = 0x0;
+    break;
+
+  case GPIO_FLOATING_INPUT_MODE:
+    index = GPIO_MODE_INPUT;
+    cnf_mode = 0x1;
+    break;
+
+  case GPIO_MODE_WITH_PULL_UP_AND_PULL_DOWN:
+    index = GPIO_MODE_FUNCTION;
+    cnf_mode = 0x2;
+    break;
+
+  case GPIO_PUSH_PULL_OUTPUT_MODE:
+    index = GPIO_MODE_OUTPUT;
+    cnf_mode = 0x0 | default_output_bits;
+    break;
+
+  case GPIO_OPEN_DRAIN_OUTPUT_MODE:
+    index = GPIO_MODE_OUTPUT;
+    cnf_mode = 0x1 | default_output_bits;
+    break;
+
+  case GPIO_FUNC_PUSH_PULL_OUTPUT_MODE:
+    index = GPIO_MODE_FUNCTION;
+    cnf_mode = 0x2 | default_output_bits;
+    break;
+
+  case GPIO_FUNC_DRAIN_OUTPUT_MODE:
+    index = GPIO_MODE_FUNCTION;
+    cnf_mode = 0x3 | default_output_bits;
+    break;
+
+  case GPIO_MODE_RAW_INPUT:
+    index = GPIO_MODE_INPUT;
+    cnf_mode = detail.raw_cnf_mode;
+    break;
+
+  case GPIO_MODE_RAW_OUTPUT:
+    index = GPIO_MODE_OUTPUT;
+    cnf_mode = detail.raw_cnf_mode;
+    break;
+
+  case GPIO_MODE_RAW_FUNCTION:
+    index = GPIO_MODE_FUNCTION;
+    cnf_mode = detail.raw_cnf_mode;
+    break;
+  }
+
+  /* store detail in memory, use gpio_set_mode() to make use of these settings */
+  switch (index) {
+  case GPIO_MODE_INPUT:
+    unpacked_ptr->data[0] = cnf_mode;
+    break;
+
+  case GPIO_MODE_OUTPUT:
+    unpacked_ptr->data[1] = cnf_mode;
+    break;
+
+  case GPIO_MODE_FUNCTION:
+    unpacked_ptr->data[2] = cnf_mode;
+    break;
+  }
+}
 
 void gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
 			 const gpio_mode_t mode)
 {
   gpio_ch32v_cfg_packed_t packed_a, packed_b;
-  uint8_t value;
+  gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
 
-  if (mode == GPIO_MODE_OUTPUT) {
-    value = 0x6;
+  if (pp.pin <= 7) {
+    unpacked_ptr = &gpio_ch32v_cfglr_occ[pp.port].unpacked[pp.pin];
   } else {
-    value = 0x4;
+    unpacked_ptr = &gpio_ch32v_cfghr_occ[pp.port].unpacked[pp.pin - 8];
+  }
+
+  switch(mode) {
+  case GPIO_MODE_INPUT:
+    unpacked_ptr->idx = 0;
+    break;
+
+  case GPIO_MODE_OUTPUT:
+    unpacked_ptr->idx = 1;
+    break;
+
+  case GPIO_MODE_FUNCTION:
+    unpacked_ptr->idx = 2;
+    break;
   }
 
   if (pp.pin <= 7) {
-    gpio_ch32v_cfglr_occ[pp.port].unpacked_cnf_mode[pp.pin] = value;
     occ_pack_flush(&gpio_ch32v_cfglr_occ[pp.port].head, &packed_a, &packed_b);
   } else {
-    gpio_ch32v_cfghr_occ[pp.port].unpacked_cnf_mode[pp.pin - 8] = value;
     occ_pack_flush(&gpio_ch32v_cfghr_occ[pp.port].head, &packed_a, &packed_b);
   }
 }
