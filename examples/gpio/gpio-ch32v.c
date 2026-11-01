@@ -49,6 +49,14 @@ static void gpio_ch32v_occ_init(struct occ_pack_flush_head *head)
   uint32_t packed;
   int k;
 
+  /* initialize unpacked data structure with defaults for each mode */
+  for (k = 0; k < 8; k++) {
+    cfg->unpacked[k].data[0] = 0x04; /* INPUT: Floating input mode */
+    cfg->unpacked[k].data[1] = 0x06; /* OUTPUT: Open-Drain 2 MHz */
+    cfg->unpacked[k].data[2] = 0xc0; /* FUNCTION: Reserved */
+  }
+
+  /* figure out which hardware register we should access */
   if (cfg->pp.pin <= 7) {
     cfg->port = gpio_ch32v_enum_to_port[cfg->pp.port] + 0x0; /* CFGLR */
   } else {
@@ -57,10 +65,41 @@ static void gpio_ch32v_occ_init(struct occ_pack_flush_head *head)
 
   /* read from hardware CFGxR register (a single 32-bit read access) */
   packed = *cfg->port;
-  /* initialize unpacked data structure from hardware */
+
+  /* update unpacked data structure with current information from hardware */
   for (k = 0; k < 8; k++) {
-    cfg->unpacked[k].idx = 0;
-    cfg->unpacked[k].data[0] = packed & 0x0f; // FIXME: this needs more work
+    switch (packed & 0x03) {
+    case 0:
+      switch (packed & 0x0c) {
+      case 0x00:
+      case 0x04: /* Input mode (Analog or Floating) */
+	cfg->unpacked[k].idx = 0;
+	cfg->unpacked[k].data[0] = packed & 0x0f;
+	break;
+      case 0x08:
+      case 0x0c: /* Function (With Pull-Up/Down and Reserved) */
+	cfg->unpacked[k].idx = 2;
+	cfg->unpacked[k].data[2] = packed & 0x0f;
+	break;
+      }
+      break;
+
+    default:
+      switch (packed & 0x0c) {
+      case 0x00:
+      case 0x04: /* Output mode (Push-Pull or Open-Drain) */
+	cfg->unpacked[k].idx = 1;
+	cfg->unpacked[k].data[1] = packed & 0x0f;
+	break;
+      case 0x08:
+      case 0x0c: /* Function (With Pull-Up/Down and Reserved) */
+	cfg->unpacked[k].idx = 2;
+	cfg->unpacked[k].data[2] = packed & 0x0f;
+	break;
+      }
+      break;
+    }
+
     packed >>= 4;
   }
 }
@@ -70,7 +109,7 @@ static void gpio_ch32v_occ_pack(struct occ_pack_flush_head *head, void *pack_out
   gpio_ch32v_cfg_unpacked_t *cfg = head_to_unpacked(head);
   uint32_t *packed_ptr = pack_out;
   gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
-  uint8_t unpacked[8];
+  uint8_t unpacked[8] = {};
   uint32_t packed;
   int k;
 
@@ -124,7 +163,7 @@ void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
 {
   uint8_t default_output_bits = 0x1; /* 10 MHz on CH32V003 and CH32V2003 */
   gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
-  int index = -1; /* default to modifying the input settings */
+  int index = -1;
   uint8_t cnf_mode;
 
   if (pp.pin <= 7) {
@@ -136,37 +175,37 @@ void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
   switch(detail.mode_detail) {
   case GPIO_ANALOG_INPUT_MODE:
     index = GPIO_MODE_INPUT;
-    cnf_mode = 0x0;
+    cnf_mode = 0x0 << 2;
     break;
 
   case GPIO_FLOATING_INPUT_MODE:
     index = GPIO_MODE_INPUT;
-    cnf_mode = 0x1;
+    cnf_mode = 0x1 << 2;
     break;
 
   case GPIO_MODE_WITH_PULL_UP_AND_PULL_DOWN:
     index = GPIO_MODE_FUNCTION;
-    cnf_mode = 0x2;
+    cnf_mode = 0x2 << 2;
     break;
 
   case GPIO_PUSH_PULL_OUTPUT_MODE:
     index = GPIO_MODE_OUTPUT;
-    cnf_mode = 0x0 | default_output_bits;
+    cnf_mode = (0x0 << 2) | default_output_bits;
     break;
 
   case GPIO_OPEN_DRAIN_OUTPUT_MODE:
     index = GPIO_MODE_OUTPUT;
-    cnf_mode = 0x1 | default_output_bits;
+    cnf_mode = (0x1 << 2) | default_output_bits;
     break;
 
   case GPIO_FUNC_PUSH_PULL_OUTPUT_MODE:
     index = GPIO_MODE_FUNCTION;
-    cnf_mode = 0x2 | default_output_bits;
+    cnf_mode = (0x2 << 2) | default_output_bits;
     break;
 
   case GPIO_FUNC_DRAIN_OUTPUT_MODE:
     index = GPIO_MODE_FUNCTION;
-    cnf_mode = 0x3 | default_output_bits;
+    cnf_mode = (0x3 << 2) | default_output_bits;
     break;
 
   case GPIO_MODE_RAW_INPUT:
