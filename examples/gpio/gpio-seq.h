@@ -20,9 +20,12 @@ typedef struct {
       / sizeof(gpio_port_pin_t) \
   }
 
-typedef enum { SEQ_OP_DATA_IN, SEQ_OP_DATA_OUT,
-	       SEQ_OP_SET, SEQ_OP_CLEAR,
-	       SEQ_OP_SET_VALUE, SEQ_OP_GET_VALUE  } gpio_seq_t;
+typedef enum { SEQ_OP_BARRIER,
+               SEQ_OP_DATA_IN, SEQ_OP_DATA_OUT,
+               SEQ_OP_SET, SEQ_OP_CLEAR,
+               SEQ_OP_SET_VALUE, SEQ_OP_GET_VALUE,
+               SEQ_OP_MODE_INPUT, SEQ_OP_MODE_OUTPUT,
+} gpio_seq_t;
 
 typedef struct {
   // a list of sequence opcodes, used together with sequence pins
@@ -41,12 +44,16 @@ typedef struct {
 #define SEQ_ARG_SHIFT 4
 #define SEQ_MASK      0x0f
 
-#define SEQ_SET(n)       (SEQ_OP_SET | ((n) << SEQ_ARG_SHIFT))
-#define SEQ_CLEAR(n)     (SEQ_OP_CLEAR | ((n) << SEQ_ARG_SHIFT))
-#define SEQ_DATA_IN(n)   (SEQ_OP_DATA_IN | ((n) << SEQ_ARG_SHIFT))
-#define SEQ_DATA_OUT(n)  (SEQ_OP_DATA_OUT | ((n) << SEQ_ARG_SHIFT))
-#define SEQ_SET_VALUE(n) (SEQ_OP_SET_VALUE | ((n) << SEQ_ARG_SHIFT))
-#define SEQ_GET_VALUE(n) (SEQ_OP_GET_VALUE | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_BARRIER        (SEQ_OP_BARRIER)
+#define SEQ_SET(n)         (SEQ_OP_SET | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_CLEAR(n)       (SEQ_OP_CLEAR | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_DATA_IN(n)     (SEQ_OP_DATA_IN | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_DATA_OUT(n)    (SEQ_OP_DATA_OUT | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_SET_VALUE(n)   (SEQ_OP_SET_VALUE | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_GET_VALUE(n)   (SEQ_OP_GET_VALUE | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_MODE_INPUT(n)  (SEQ_OP_MODE_INPUT | ((n) << SEQ_ARG_SHIFT))
+#define SEQ_MODE_OUTPUT(n) (SEQ_OP_MODE_OUTPUT | ((n) << SEQ_ARG_SHIFT))
+
 
 typedef struct {
   // a fixed-size sequence data buffer for incoming data
@@ -92,7 +99,7 @@ static inline void gpio_seq_run(gpio_sequence_pins_t seq_pins,
         data_out_idx = m;
         break;
       case SEQ_OP_SET_VALUE:
-        gpio_set_value(seq_pins.pp[m % GPIO_SEQ_MAX_PINS],
+        gpio_set_value(seq_pins.pp[m],
                        seq_data_out->data_out[data_out_idx] != 0);
         break;
       }
@@ -104,17 +111,26 @@ static inline void gpio_seq_run(gpio_sequence_pins_t seq_pins,
         break;
       case SEQ_OP_GET_VALUE:
         seq_data_in->data_in[data_in_idx] = \
-          gpio_get_value(seq_pins.pp[m % GPIO_SEQ_MAX_PINS]);
+          gpio_get_value(seq_pins.pp[m]);
         break;
       }
     }
 
     switch (seq_opcodes.opc[k] & SEQ_MASK) {
     case SEQ_OP_SET:
-      gpio_set_value(seq_pins.pp[m % GPIO_SEQ_MAX_PINS], 1);
+      gpio_set_value(seq_pins.pp[m], 1);
       break;
     case SEQ_OP_CLEAR:
-      gpio_set_value(seq_pins.pp[m % GPIO_SEQ_MAX_PINS], 0);
+      gpio_set_value(seq_pins.pp[m], 0);
+      break;
+    case SEQ_OP_MODE_INPUT:
+      gpio_set_mode(seq_pins.pp[m], GPIO_MODE_INPUT);
+      break;
+    case SEQ_OP_MODE_OUTPUT:
+      gpio_set_mode(seq_pins.pp[m], GPIO_MODE_OUTPUT);
+      break;
+    case SEQ_OP_BARRIER:
+      /* do nothing for now */
       break;
     }
   }
