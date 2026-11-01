@@ -3,7 +3,7 @@
 #include "gpio.h"
 #include "occ-pack-flush.h"
 
-#ifdef CH32V203C8T6_R0_1V0
+#if defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1)
 
 typedef struct {
   struct occ_pack_flush_head head;
@@ -154,4 +154,4 @@ void gpio_ch32v_init(void)
 			      GPIO_CH32V(GPIO_PORTF, 8));
 }
 
-#endif /* CH32V203C8T6_R0_1V0 */
+#endif /* defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1) */

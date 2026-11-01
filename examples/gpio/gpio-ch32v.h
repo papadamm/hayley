@@ -3,7 +3,7 @@
 
 #include "occ-pack-flush.h"
 
-#ifdef CH32V203C8T6_R0_1V0
+#if defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1)
 
 typedef enum { GPIO_PORTA, GPIO_PORTB, GPIO_PORTC,
 	       GPIO_PORTD, GPIO_PORTE, GPIO_PORTF } gpio_ch32v_port_t;
@@ -58,7 +58,7 @@ gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
 
 extern void gpio_ch32v_init(void);
 
-#else /* CH32V203C8T6_R0_1V0 */
+#else /* defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1) */
 
 typedef struct {
 } gpio_ch32v_port_pin_t;
@@ -77,6 +77,6 @@ gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
 
 static inline void gpio_ch32v_init(void) {}
 
-#endif /* CH32V203C8T6_R0_1V0 */
+#endif /* defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1) */
 
 #endif /* __GPIO_CH32V_H__ */
