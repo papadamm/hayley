@@ -7,12 +7,14 @@ typedef enum { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_FUNCTION } gpio_mode
 // gpio headers for all supported systems are included here
 #include "gpio-atmega4809.h"
 #include "gpio-ch32v.h"
+#include "gpio-stm32h7.h"
 
 typedef struct {
   union {
     // a list of private per-uC definitions of how to describe a GPIO
     gpio_atmega4809_port_pin_t atmega4809;
     gpio_ch32v_port_pin_t ch32v;
+    gpio_stm32h7_port_pin_t stm32h7;
     // make the structure at least 1 byte large to avoid div-by-zero
     uint8_t something_rather_than_nothing;
   } u;
@@ -22,6 +24,7 @@ typedef struct {
   union {
     // a list of private per-uC definitions of detailed mode settings
     gpio_ch32v_mode_detail_t ch32v;
+    gpio_stm32h7_mode_detail_t stm32h7;
     // make the structure at least 1 byte large to avoid div-by-zero
     uint8_t something_rather_than_nothing;
   } u;
@@ -35,6 +38,7 @@ static inline void gpio_set_value(const gpio_port_pin_t pp,
 {
   gpio_atmega4809_set_value(pp.u.atmega4809, value);
   gpio_ch32v_set_value(pp.u.ch32v, value);
+  gpio_stm32h7_set_value(pp.u.stm32h7, value);
 }
 
 // function to get GPIO value (read the state of a GPIO pin)
@@ -45,6 +49,7 @@ static inline int gpio_get_value(const gpio_port_pin_t pp)
   int value = -1;
   value == -1 ? value = gpio_atmega4809_get_value(pp.u.atmega4809) : value;
   value == -1 ? value = gpio_ch32v_get_value(pp.u.ch32v) : value;
+  value == -1 ? value = gpio_stm32h7_get_value(pp.u.stm32h7) : value;
   return value;
 }
 
@@ -55,6 +60,7 @@ static inline void gpio_set_mode(const gpio_port_pin_t pp, const gpio_mode_t mod
 {
   gpio_atmega4809_set_mode(pp.u.atmega4809, mode);
   gpio_ch32v_set_mode(pp.u.ch32v, mode);
+  gpio_stm32h7_set_mode(pp.u.stm32h7, mode);
 }
 
 // function to set GPIO mode detail (provide more detailed information)
@@ -65,6 +71,7 @@ static inline void gpio_set_mode_detail(const gpio_port_pin_t pp,
                                         const gpio_mode_detail_t detail)
 {
   gpio_ch32v_set_mode_detail(pp.u.ch32v, mode, detail.u.ch32v);
+  gpio_stm32h7_set_mode_detail(pp.u.stm32h7, mode, detail.u.stm32h7);
 }
 
 // function to set GPIO direction (select between GPIO input or output)
