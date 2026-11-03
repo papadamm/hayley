@@ -1,8 +1,6 @@
 #ifndef __GPIO_CH32V_H__
 #define __GPIO_CH32V_H__
 
-#include "occ-pack-flush.h"
-
 #if defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1)
 
 typedef enum { GPIO_PORTA, GPIO_PORTB, GPIO_PORTC,
@@ -100,7 +98,7 @@ typedef struct {
 } gpio_ch32v_mode_detail_t;
 
 #define GPIO_MODE_DETAIL_CH32V(...) (gpio_mode_detail_t) {}
-#define GPIO_MODE_DETAIL_OUTPUT_CH32V(...) (gpio_mode_detail_t) {}
+#define GPIO_MODE_DETAIL_RAW_CH32V(...) (gpio_mode_detail_t) {}
 
 static inline void
 gpio_ch32v_set_value(const gpio_ch32v_port_pin_t pp,
