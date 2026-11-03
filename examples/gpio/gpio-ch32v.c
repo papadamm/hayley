@@ -162,6 +162,7 @@ void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
                                 const gpio_mode_t mode,
                                 const gpio_ch32v_mode_detail_t detail)
 {
+  gpio_ch32v_cfg_packed_t packed_a, packed_b;
   uint8_t default_output_bits = 0x1; /* 10 MHz on CH32V003 and CH32V2003 */
   gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
   int index = -1;
@@ -171,6 +172,20 @@ void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
     unpacked_ptr = &gpio_ch32v_cfglr_occ[pp.port].unpacked[pp.pin];
   } else {
     unpacked_ptr = &gpio_ch32v_cfghr_occ[pp.port].unpacked[pp.pin - 8];
+  }
+
+  switch(mode) {
+  case GPIO_MODE_INPUT:
+    unpacked_ptr->idx = 0;
+    break;
+
+  case GPIO_MODE_OUTPUT:
+    unpacked_ptr->idx = 1;
+    break;
+
+  case GPIO_MODE_FUNCTION:
+    unpacked_ptr->idx = 2;
+    break;
   }
 
   switch(detail.mode_detail) {
@@ -225,7 +240,6 @@ void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
     break;
   }
 
-  /* store detail in memory, use gpio_set_mode() to make use of these settings */
   switch (index) {
   case GPIO_MODE_INPUT:
     unpacked_ptr->data[0] = cnf_mode;
@@ -239,38 +253,41 @@ void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
     unpacked_ptr->data[2] = cnf_mode;
     break;
   }
-}
-
-void gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
-			 const gpio_mode_t mode)
-{
-  gpio_ch32v_cfg_packed_t packed_a, packed_b;
-  gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;
-
-  if (pp.pin <= 7) {
-    unpacked_ptr = &gpio_ch32v_cfglr_occ[pp.port].unpacked[pp.pin];
-  } else {
-    unpacked_ptr = &gpio_ch32v_cfghr_occ[pp.port].unpacked[pp.pin - 8];
-  }
-
-  switch(mode) {
-  case GPIO_MODE_INPUT:
-    unpacked_ptr->idx = 0;
-    break;
-
-  case GPIO_MODE_OUTPUT:
-    unpacked_ptr->idx = 1;
-    break;
-
-  case GPIO_MODE_FUNCTION:
-    unpacked_ptr->idx = 2;
-    break;
-  }
 
   if (pp.pin <= 7) {
     occ_pack_flush(&gpio_ch32v_cfglr_occ[pp.port].head, &packed_a, &packed_b);
   } else {
     occ_pack_flush(&gpio_ch32v_cfghr_occ[pp.port].head, &packed_a, &packed_b);
+  }
+}
+
+static void __set_mode_detail_ext(const gpio_ch32v_port_pin_t pp,
+                                  const gpio_mode_t mode,
+                                  const gpio_mode_detail_t detail)
+{
+  gpio_ch32v_set_mode_detail(pp, mode, detail.u.ch32v);
+}
+
+void gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
+			 const gpio_mode_t mode)
+{
+  /* here we simply select fixed defaults with each mode to use */
+
+  switch(mode) {
+  case GPIO_MODE_INPUT:
+    __set_mode_detail_ext(pp, mode,
+                          GPIO_MODE_DETAIL_CH32V(GPIO_FLOATING_INPUT_MODE));
+    break;
+
+  case GPIO_MODE_OUTPUT:
+    __set_mode_detail_ext(pp, mode,
+                          GPIO_MODE_DETAIL_CH32V(GPIO_PUSH_PULL_OUTPUT_MODE));
+    break;
+
+  case GPIO_MODE_FUNCTION:
+    __set_mode_detail_ext(pp, mode,
+                          GPIO_MODE_DETAIL_CH32V(GPIO_FUNC_DRAIN_OUTPUT_MODE));
+    break;
   }
 }
 
