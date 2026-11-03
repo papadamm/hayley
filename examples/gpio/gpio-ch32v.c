@@ -159,7 +159,8 @@ static int gpio_ch32v_occ_has_changed(struct occ_pack_flush_head *head,
 }
 
 void gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
-				const gpio_ch32v_mode_detail_t detail)
+                                const gpio_mode_t mode,
+                                const gpio_ch32v_mode_detail_t detail)
 {
   uint8_t default_output_bits = 0x1; /* 10 MHz on CH32V003 and CH32V2003 */
   gpio_ch32v_unpacked_per_gpio_data_t *unpacked_ptr;

@@ -61,9 +61,10 @@ static inline void gpio_set_mode(const gpio_port_pin_t pp, const gpio_mode_t mod
 // this simply goes through all the implementations
 // the compiler will exclude not needed variants
 static inline void gpio_set_mode_detail(const gpio_port_pin_t pp,
+                                        const gpio_mode_t mode,
                                         const gpio_mode_detail_t detail)
 {
-  gpio_ch32v_set_mode_detail(pp.u.ch32v, detail.u.ch32v);
+  gpio_ch32v_set_mode_detail(pp.u.ch32v, mode, detail.u.ch32v);
 }
 
 // function to set GPIO direction (select between GPIO input or output)

@@ -83,6 +83,7 @@ gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
 
 extern void
 gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
+                           const gpio_mode_t mode,
                            const gpio_ch32v_mode_detail_t detail);
 
 extern void gpio_ch32v_init(void);
@@ -112,6 +113,7 @@ gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
 
 static inline void
 gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
+                           const gpio_mode_t mode,
                            const gpio_ch32v_mode_detail_t detail) {}
 
 static inline void gpio_ch32v_init(void) {}
