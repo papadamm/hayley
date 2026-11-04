@@ -34,7 +34,7 @@ static void gpio_stm32h7_d2id(gpio_stm32h7_mode_internal_detail_t *out,
   out->data = data;
 
   /* in case function is selected in MODER, store one copy of AFR */
-  if ((in->moder == 0x02)) {
+  if (in->moder == 0x02) {
     if (afr_out) {
       *afr_out = in->afr;
     }
@@ -57,7 +57,7 @@ static void gpio_stm32h7_id2d(gpio_stm32h7_mode_detail_t *out,
   out->moder = data & 0x03;
 
   /* in case function is selected in MODER, retrieve one copy of AFR */
-  if ((out->moder == 0x02)) {
+  if (out->moder == 0x02) {
     if (afr_in) {
       out->afr = *afr_in;
     }
