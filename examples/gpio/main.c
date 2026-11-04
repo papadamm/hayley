@@ -33,9 +33,7 @@
 void led_setup(void)
 {
 #ifdef LED_GPIO_PIN_MODE_DETAIL
-  /* first provide detail, then use gpio_set_mode() to set the actual mode */
-  gpio_set_mode_detail(LED_GPIO_PIN, LED_GPIO_PIN_MODE_DETAIL);
-  gpio_set_mode(LED_GPIO_PIN, GPIO_MODE_OUTPUT);
+  gpio_set_mode_detail(LED_GPIO_PIN, GPIO_MODE_OUTPUT, LED_GPIO_PIN_MODE_DETAIL);
 #else
   gpio_set_direction(LED_GPIO_PIN, GPIO_DIR_OUTPUT);
 #endif
