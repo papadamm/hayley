@@ -66,7 +66,6 @@ __gpio_atmega328_port_set(const gpio_atmega328_port_pin_t pp,
       *port |= 1 << pp.pin;
     } else {
       *port &= ~(1 << pp.pin);
-
     }
   }
 }
@@ -98,7 +97,7 @@ static inline void
 gpio_atmega328_set_mode(const gpio_atmega328_port_pin_t pp,
                         const gpio_mode_t mode)
 {
-  /* atomic data register access with PORTB, PORTC or PORTD */
+  /* atomic data register access with DDRB, DDRC or DDRD */
   __gpio_atmega328_port_set(pp, mode == GPIO_MODE_OUTPUT ? 1 : 0, 0x01);
 }
 
