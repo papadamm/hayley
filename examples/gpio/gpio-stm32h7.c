@@ -171,8 +171,8 @@ static void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head,
 
     /* retrieve internal details and process as detail */
     gpio_stm32h7_id2d(&detail,
-                      &cfg->unpacked[cfg->unpacked[k].idx].afr,
-                      &cfg->unpacked[cfg->unpacked[k].idx].detail[0]);
+                      &cfg->unpacked[k].afr,
+                      &cfg->unpacked[k].detail[cfg->unpacked[k].idx]);
 
     packed->moder <<= 2;
     packed->moder |= detail.moder;
