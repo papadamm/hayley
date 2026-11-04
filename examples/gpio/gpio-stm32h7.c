@@ -224,20 +224,16 @@ static int gpio_stm32h7_occ_has_changed(struct occ_pack_flush_head *head,
   return memcmp(packed_a, packed_b, sizeof(*packed_a)) != 0;
 }
 
-static void gpio_stm32h7_set_mode_pack(const gpio_stm32h7_port_pin_t pp)
+void gpio_stm32h7_set_mode_detail(const gpio_stm32h7_port_pin_t pp,
+                                  const gpio_mode_t mode,
+                                  const gpio_stm32h7_mode_detail_t detail)
 {
   gpio_stm32h7_cfg_packed_t packed_a, packed_b;
-
-  occ_pack_flush(&gpio_stm32h7_occ[pp.port].head, &packed_a, &packed_b);
-}
-
-static void gpio_stm32h7_set_mode_idx(const gpio_stm32h7_port_pin_t pp,
-                                      const gpio_mode_t mode)
-{
   gpio_stm32h7_unpacked_per_gpio_data_t *unpacked;
 
   unpacked = &gpio_stm32h7_occ[pp.port].unpacked[pp.pin];
 
+  /* use idx to determine which set of details to update */
   switch(mode) {
   case GPIO_MODE_INPUT:
     unpacked->idx = 0;
@@ -251,27 +247,14 @@ static void gpio_stm32h7_set_mode_idx(const gpio_stm32h7_port_pin_t pp,
     unpacked->idx = 2;
     break;
   }
-}
-
-void gpio_stm32h7_set_mode_detail(const gpio_stm32h7_port_pin_t pp,
-                                  const gpio_mode_t mode,
-                                  const gpio_stm32h7_mode_detail_t detail)
-{
-  gpio_stm32h7_unpacked_per_gpio_data_t *unpacked;
-
-  unpacked = &gpio_stm32h7_occ[pp.port].unpacked[pp.pin];
-
-  /* use idx to determine which set of details to update */
-  /* store details as internal details as unpacked per-mode per-pin data */
-
-  gpio_stm32h7_set_mode_idx(pp, mode);
-
+ 
+  /* internal details stored as unpacked per-mode per-pin data except AFR */
   /* store details in internal detail format to reduce memory footprint */
   gpio_stm32h7_d2id(&unpacked->detail[unpacked->idx],
 		    &unpacked->afr, /* per-pin AFR */
 		    &detail);
 
-  gpio_stm32h7_set_mode_pack(pp);
+  occ_pack_flush(&gpio_stm32h7_occ[pp.port].head, &packed_a, &packed_b);
 }
 
 static void gpio_stm32h7_set_mode_detail_ext(const gpio_stm32h7_port_pin_t pp,
