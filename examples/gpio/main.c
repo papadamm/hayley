@@ -2,6 +2,10 @@
 
 #include "gpio.h"
 
+#ifdef SEEEDUINO_NANO
+#define LED_GPIO_PIN GPIO_ATMEGA328(GPIO_PORTB, 5)
+#endif
+
 #ifdef ARDUINO_NANO_EVERY
 #define LED_GPIO_PIN GPIO_ATMEGA4809(GPIO_PORTE, 2)
 #endif
