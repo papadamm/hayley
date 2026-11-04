@@ -5,6 +5,7 @@ typedef enum { GPIO_DIR_INPUT, GPIO_DIR_OUTPUT } gpio_direction_t;
 typedef enum { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_FUNCTION } gpio_mode_t;
 
 // gpio headers for all supported systems are included here
+#include "gpio-atmega328.h"
 #include "gpio-atmega4809.h"
 #include "gpio-ch32v.h"
 #include "gpio-stm32f1.h"
@@ -13,6 +14,7 @@ typedef enum { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_FUNCTION } gpio_mode
 typedef struct {
   union {
     // a list of private per-uC definitions of how to describe a GPIO
+    gpio_atmega328_port_pin_t atmega328;
     gpio_atmega4809_port_pin_t atmega4809;
     gpio_ch32v_port_pin_t ch32v;
     gpio_stm32f1_port_pin_t stm32f1;
@@ -39,6 +41,7 @@ typedef struct {
 static inline void gpio_set_value(const gpio_port_pin_t pp,
                                   const int value)
 {
+  gpio_atmega328_set_value(pp.u.atmega328, value);
   gpio_atmega4809_set_value(pp.u.atmega4809, value);
   gpio_ch32v_set_value(pp.u.ch32v, value);
   gpio_stm32f1_set_value(pp.u.stm32f1, value);
@@ -51,6 +54,7 @@ static inline void gpio_set_value(const gpio_port_pin_t pp,
 static inline int gpio_get_value(const gpio_port_pin_t pp)
 {
   int value = -1;
+  value == -1 ? value = gpio_atmega328_get_value(pp.u.atmega328) : value;
   value == -1 ? value = gpio_atmega4809_get_value(pp.u.atmega4809) : value;
   value == -1 ? value = gpio_ch32v_get_value(pp.u.ch32v) : value;
   value == -1 ? value = gpio_stm32f1_get_value(pp.u.stm32f1) : value;
@@ -63,6 +67,7 @@ static inline int gpio_get_value(const gpio_port_pin_t pp)
 // the compiler will exclude not needed variants
 static inline void gpio_set_mode(const gpio_port_pin_t pp, const gpio_mode_t mode)
 {
+  gpio_atmega328_set_mode(pp.u.atmega328, mode);
   gpio_atmega4809_set_mode(pp.u.atmega4809, mode);
   gpio_ch32v_set_mode(pp.u.ch32v, mode);
   gpio_stm32f1_set_mode(pp.u.stm32f1, mode);
