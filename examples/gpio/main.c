@@ -81,6 +81,8 @@ static void silly_delay(uint32_t value)
   }
 }
 
+#if 0
+
 #define PIN_SDA GPIO_ATMEGA4809(GPIO_PORTD, 3) // A0
 #define PIN_SCL GPIO_ATMEGA4809(GPIO_PORTD, 2) // A1
 
@@ -152,6 +154,10 @@ void i2c_trial(void)
   i2c_send_data(0x3c << 1);
   i2c_send_data(0x00);
 }
+
+#else
+static inline void i2c_trial(void) {}
+#endif
 
 int main(void)
 {
