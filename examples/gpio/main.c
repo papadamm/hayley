@@ -20,8 +20,6 @@
 
 #ifdef CH32V003F4P6_R0_1V1
 #define LED_GPIO_PIN GPIO_CH32V(GPIO_PORTC, 0)
-#define LED_GPIO_PIN_MODE_DETAIL \
-  GPIO_MODE_DETAIL_CH32V(GPIO_PUSH_PULL_OUTPUT_MODE)
 #endif
 
 #ifdef CH32V203C8T6_R0_1V0
@@ -176,6 +174,13 @@ int main(void)
     *RCC_AP24ENR = 0x1fd; /* enable AFIO and GPIOA->GPIOG */
   }
   gpio_stm32f1_init();
+#endif
+#if defined(CH32V003F4P6_R0_1V1)
+  {
+    volatile uint32_t *RCC_APB2PCENR = (void *)0x40021018;
+    *RCC_APB2PCENR = 0x10;  /* IOPCEN=1 */
+  }
+  gpio_ch32v_init();
 #endif
 
   led_setup();
