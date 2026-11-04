@@ -31,7 +31,7 @@ static gpio_stm32h7_cfg_unpacked_t gpio_stm32h7_occ[] = {
   (gpio_stm32h7_cfg_unpacked_t *) \
   ((void *)(h) - __builtin_offsetof(gpio_stm32h7_cfg_unpacked_t, head))
 
-void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
+static void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
 {
   gpio_stm32h7_cfg_unpacked_t *cfg = head_to_unpacked(head);
   gpio_stm32h7_cfg_packed_t packed;
@@ -96,7 +96,8 @@ void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
   }
 }
 
-void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head, void *pack_out)
+static void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head,
+                                  void *pack_out)
 {
   gpio_stm32h7_cfg_unpacked_t *cfg = head_to_unpacked(head);
   gpio_stm32h7_cfg_packed_t *packed = pack_out;
@@ -132,7 +133,7 @@ void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head, void *pack_out)
   }
 }
 
-void gpio_stm32h7_occ_flush(struct occ_pack_flush_head *head,
+static void gpio_stm32h7_occ_flush(struct occ_pack_flush_head *head,
                                    void *pack_in)
 {
   gpio_stm32h7_cfg_unpacked_t *cfg = head_to_unpacked(head);
@@ -151,7 +152,7 @@ void gpio_stm32h7_occ_flush(struct occ_pack_flush_head *head,
   base[9] = packed->afrh; /* 0x24: AFRH */
 }
 
-int gpio_stm32h7_occ_has_changed(struct occ_pack_flush_head *head,
+static int gpio_stm32h7_occ_has_changed(struct occ_pack_flush_head *head,
                                         void *pack_a, void *pack_b)
 {
   gpio_stm32h7_cfg_packed_t *packed_a = pack_a;
@@ -160,15 +161,15 @@ int gpio_stm32h7_occ_has_changed(struct occ_pack_flush_head *head,
   return memcmp(packed_a, packed_b, sizeof(*packed_a)) != 0;
 }
 
-void gpio_stm32h7_set_mode_pack(const gpio_stm32h7_port_pin_t pp)
+static void gpio_stm32h7_set_mode_pack(const gpio_stm32h7_port_pin_t pp)
 {
   gpio_stm32h7_cfg_packed_t packed_a, packed_b;
 
   occ_pack_flush(&gpio_stm32h7_occ[pp.port].head, &packed_a, &packed_b);
 }
 
-void gpio_stm32h7_set_mode_idx(const gpio_stm32h7_port_pin_t pp,
-                               const gpio_mode_t mode)
+static void gpio_stm32h7_set_mode_idx(const gpio_stm32h7_port_pin_t pp,
+                                      const gpio_mode_t mode)
 {
   gpio_stm32h7_unpacked_per_gpio_data_t *unpacked;
 
@@ -205,9 +206,9 @@ void gpio_stm32h7_set_mode_detail(const gpio_stm32h7_port_pin_t pp,
   gpio_stm32h7_set_mode_pack(pp);
 }
 
-void gpio_stm32h7_set_mode_detail_ext(const gpio_stm32h7_port_pin_t pp,
-                                      const gpio_mode_t mode,
-                                      const gpio_mode_detail_t detail)
+static void gpio_stm32h7_set_mode_detail_ext(const gpio_stm32h7_port_pin_t pp,
+                                             const gpio_mode_t mode,
+                                             const gpio_mode_detail_t detail)
 {
   gpio_stm32h7_set_mode_detail(pp, mode, detail.u.stm32h7);
 }
