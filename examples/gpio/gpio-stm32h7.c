@@ -5,11 +5,64 @@
 
 #if defined(PIXHAWK_6C_STM32H743)
 
+typedef struct {
+  uint8_t data; /* MODER, OTYPER, OSPEER and PUPDR are stored together */
+} gpio_stm32h7_mode_internal_detail_t;
+
 /* for each GPIO pin allow 3 sets of detail with index GPIO_MODE_xx */
 typedef struct {
   uint8_t idx;
-  gpio_stm32h7_mode_detail_t detail[3];
+  uint8_t afr;
+  gpio_stm32h7_mode_internal_detail_t detail[3];
 } gpio_stm32h7_unpacked_per_gpio_data_t;
+
+/* convert from detail to internal detail */
+static void gpio_stm32h7_d2id(gpio_stm32h7_mode_internal_detail_t *out,
+                              uint8_t *afr_out,
+                              gpio_stm32h7_mode_detail_t *in)
+{
+  uint8_t data = 0;
+
+  data |= in->moder & 0x03;
+  data <<= 2;
+  data |= in->otyper & 0x01;
+  data <<= 1;
+  data |= in->ospeedr & 0x02;
+  data <<= 2;
+  data |= in->pupdr & 0x03;
+
+  out->data = data;
+
+  /* in case function is selected in MODER, store one copy of AFR */
+  if ((in->moder == 0x02)) {
+    if (afr_out) {
+      *afr_out = in->afr;
+    }
+  }
+}
+
+/* convert from internal detail to detail */
+static void gpio_stm32h7_id2d(gpio_stm32h7_mode_detail_t *out,
+                              uint8_t *afr_in,
+                              gpio_stm32h7_mode_internal_detail_t *in)
+{
+  uint8_t data = in->data;
+
+  out->pupdr = data & 0x03;
+  data >>= 2;
+  out->ospeedr = data & 0x03;
+  data >>= 2;
+  out->otyper = data & 0x01;
+  data >>= 1;
+  out->moder = data & 0x03;
+
+  /* in case function is selected in MODER, retrieve one copy of AFR */
+  if ((out->moder == 0x02)) {
+    if (afr_in) {
+      out->afr = *afr_in;
+    }
+  }
+}
 
 typedef struct {
   struct occ_pack_flush_head head;
@@ -35,7 +88,7 @@ static void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
 {
   gpio_stm32h7_cfg_unpacked_t *cfg = head_to_unpacked(head);
   gpio_stm32h7_cfg_packed_t packed;
-  gpio_stm32h7_mode_detail_t *detail;
+  gpio_stm32h7_mode_detail_t detail;
   volatile uint32_t *base;
   int k;
 
@@ -58,7 +111,7 @@ static void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
 
   /* for each pin, begin by shifting read out packed data into detail[0] */
   for (k = 0; k < 16; k++) {
-    detail = &cfg->unpacked[k].detail[0];
+    detail = {};
 
     cfg->unpacked[k].idx = packed.moder & 0x3;
     /* ANALOG is treated as a kind of GPIO_MODE_FUNCTION */
@@ -66,25 +119,30 @@ static void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
       cfg->unpacked[k].idx = 2;
     }
 
-    detail->moder = packed.moder & 0x3;
+    detail.moder = packed.moder & 0x3;
     packed.moder >>= 2;
 
-    detail->otyper = packed.otyper & 0x1;
+    detail.otyper = packed.otyper & 0x1;
     packed.otyper >>= 1;
 
-    detail->ospeedr = packed.ospeedr & 0x3;
+    detail.ospeedr = packed.ospeedr & 0x3;
     packed.ospeedr >>= 2;
 
-    detail->pupdr = packed.pupdr & 0x3;
+    detail.pupdr = packed.pupdr & 0x3;
     packed.pupdr >>= 2;
 
     if (k < 8) {
-      detail->afr = packed.afrl & 0xf;
+      detail.afr = packed.afrl & 0xf;
       packed.afrl >>= 4;
     } else {
-      detail->afr = packed.afrh & 0xf;
+      detail.afr = packed.afrh & 0xf;
       packed.afrh >>= 4;
     }
+
+    /* store details in internal detail format to reduce memory footprint */
+    gpio_stm32h7_d2id(&cfg->unpacked[k].detail[0],
+                      &cfg->unpacked[k].afr,
+                      &detail);
   }
 
   /* copy detail[0] to detail[1] and detail[2] */
@@ -101,7 +159,7 @@ static void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head,
 {
   gpio_stm32h7_cfg_unpacked_t *cfg = head_to_unpacked(head);
   gpio_stm32h7_cfg_packed_t *packed = pack_out;
-  gpio_stm32h7_mode_detail_t *detail;
+  gpio_stm32h7_mode_detail_t detail;
   int k;
 
   /* when building the packed data, start from scratch and clear data */
@@ -109,26 +167,31 @@ static void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head,
 
   /* for each pin, shift unpacked input into packed copy of every register */
   for (k = 15; k >= 0; k--) {
-    detail = &cfg->unpacked[k].detail[cfg->unpacked[k].idx];
+    detail = {};
+
+    /* retrieve internal details and process as detail */
+    gpio_stm32h7_id2d(&detail,
+                      &cfg->unpacked[cfg->unpacked[k].idx].afr,
+                      &cfg->unpacked[cfg->unpacked[k].idx].detail[0]);
 
     packed->moder <<= 2;
-    packed->moder |= detail->moder;
+    packed->moder |= detail.moder;
 
     packed->otyper <<= 1;
-    packed->otyper |= detail->otyper;
+    packed->otyper |= detail.otyper;
 
     packed->ospeedr <<= 2;
-    packed->ospeedr |= detail->ospeedr;
+    packed->ospeedr |= detail.ospeedr;
 
     packed->pupdr <<= 2;
-    packed->pupdr |= detail->pupdr;
+    packed->pupdr |= detail.pupdr;
 
     if (k >= 8) {
       packed->afrh <<= 4;
-      packed->afrh |= detail->afr;
+      packed->afrh |= detail.afr;
     } else {
       packed->afrl <<= 4;
-      packed->afrl |= detail->afr;
+      packed->afrl |= detail.afr;
     }
   }
 }
@@ -199,10 +262,15 @@ void gpio_stm32h7_set_mode_detail(const gpio_stm32h7_port_pin_t pp,
   unpacked = &gpio_stm32h7_occ[pp.port].unpacked[pp.pin];
 
   /* use idx to determine which set of details to update */
-  /* then simply copy the settings into the unpacked per-mode data area */
+  /* store details as internal details as unpacked per-mode per-pin data */
 
   gpio_stm32h7_set_mode_idx(pp, mode);
-  unpacked->detail[unpacked->idx] = detail;
+
+  /* store details in internal detail format to reduce memory footprint */
+  gpio_stm32h7_d2id(&cfg->unpacked[unpacked->idx].detail[0],
+		    &cfg->unpacked[k].afr, /* AFR is per-pin, not per-mode */
+		    &detail);
+
   gpio_stm32h7_set_mode_pack(pp);
 }
 
