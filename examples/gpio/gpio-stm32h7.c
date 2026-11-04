@@ -19,7 +19,7 @@ typedef struct {
 /* convert from detail to internal detail */
 static void gpio_stm32h7_d2id(gpio_stm32h7_mode_internal_detail_t *out,
                               uint8_t *afr_out,
-                              gpio_stm32h7_mode_detail_t *in)
+                              const gpio_stm32h7_mode_detail_t *in)
 {
   uint8_t data = 0;
 
@@ -27,7 +27,7 @@ static void gpio_stm32h7_d2id(gpio_stm32h7_mode_internal_detail_t *out,
   data <<= 2;
   data |= in->otyper & 0x01;
   data <<= 1;
-  data |= in->ospeedr & 0x02;
+  data |= in->ospeedr & 0x03;
   data <<= 2;
   data |= in->pupdr & 0x03;
 
@@ -111,7 +111,7 @@ static void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
 
   /* for each pin, begin by shifting read out packed data into detail[0] */
   for (k = 0; k < 16; k++) {
-    detail = {};
+    memset(&detail, 0, sizeof(detail));
 
     cfg->unpacked[k].idx = packed.moder & 0x3;
     /* ANALOG is treated as a kind of GPIO_MODE_FUNCTION */
@@ -148,9 +148,9 @@ static void gpio_stm32h7_occ_init(struct occ_pack_flush_head *head)
   /* copy detail[0] to detail[1] and detail[2] */
   for (k = 0; k < 16; k++) {
     memcpy(&cfg->unpacked[k].detail[1], &cfg->unpacked[k].detail[0],
-	   sizeof(*detail));
+	   sizeof(gpio_stm32h7_mode_internal_detail_t));
     memcpy(&cfg->unpacked[k].detail[2], &cfg->unpacked[k].detail[0],
-	   sizeof(*detail));
+	   sizeof(gpio_stm32h7_mode_internal_detail_t));
   }
 }
 
@@ -167,7 +167,7 @@ static void gpio_stm32h7_occ_pack(struct occ_pack_flush_head *head,
 
   /* for each pin, shift unpacked input into packed copy of every register */
   for (k = 15; k >= 0; k--) {
-    detail = {};
+    memset(&detail, 0, sizeof(detail));
 
     /* retrieve internal details and process as detail */
     gpio_stm32h7_id2d(&detail,
@@ -267,8 +267,8 @@ void gpio_stm32h7_set_mode_detail(const gpio_stm32h7_port_pin_t pp,
   gpio_stm32h7_set_mode_idx(pp, mode);
 
   /* store details in internal detail format to reduce memory footprint */
-  gpio_stm32h7_d2id(&cfg->unpacked[unpacked->idx].detail[0],
-		    &cfg->unpacked[k].afr, /* AFR is per-pin, not per-mode */
+  gpio_stm32h7_d2id(&unpacked->detail[unpacked->idx],
+		    &unpacked->afr, /* per-pin AFR */
 		    &detail);
 
   gpio_stm32h7_set_mode_pack(pp);
