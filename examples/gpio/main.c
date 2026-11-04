@@ -6,6 +6,14 @@
 #define LED_GPIO_PIN GPIO_ATMEGA4809(GPIO_PORTE, 2)
 #endif
 
+#if defined(PIXHAWK_6C_STM32H743)
+#define LED_GPIO_PIN GPIO_STM32H7(GPIOD_PORT, 10)
+#endif
+
+#if defined(PIXHAWK_6C_STM32F103)
+#define LED_GPIO_PIN GPIO_STM32F1(GPIOB_PORT, 14)
+#endif
+
 #ifdef CH32V003F4P6_R0_1V1
 #define LED_GPIO_PIN GPIO_CH32V(GPIO_PORTC, 0)
 #define LED_GPIO_PIN_MODE_DETAIL \
@@ -147,6 +155,21 @@ void i2c_trial(void)
 
 int main(void)
 {
+#if defined(PIXHAWK_6C_STM32H743)
+  {
+    volatile uint32_t *RCC_AHB4ENR = (void *)0x580244e0;
+    *RCC_AHB4ENR = 0x7ff; /* enable GPIOA->GPIOK */
+  }
+  gpio_stm32h7_init();
+#endif
+#if defined(PIXHAWK_6C_STM32F103)
+  {
+    volatile uint32_t *RCC_AP24ENR = (void *)0x40021018;
+    *RCC_AP24ENR = 0x1fd; /* enable AFIO and GPIOA->GPIOG */
+  }
+  gpio_stm32f1_init();
+#endif
+
   led_setup();
 
   i2c_trial();
