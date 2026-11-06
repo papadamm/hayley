@@ -136,9 +136,11 @@ SECTIONS
 EOF
 }
 
-# link command requires special handling
-
-if [ "$1" == "link" ]; then
+handle_link_command ()
+{
+  OBJOUT=$1
+  MAPOUT=$2
+  shift; shift
   HL_CROSS_COMPILE=`hl_query_top get-cross-compile`
   HL_TARGET_FLAGS=`hl_query_top get-asmflags`
 
@@ -190,8 +192,15 @@ if [ "$1" == "link" ]; then
 
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
-  shift
-  ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
+  if [ "${MAPOUT}" != /dev/null ]; then
+    ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" -Map=${MAPOUT} $@ -o "${t0}"
+  else
+    ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
+  fi
+
+  if [ "${OBJOUT}" != /dev/null ]; then
+    cp "${t0}" "${OBJOUT}"
+  fi
 
   # add boot2 code as a prefix (this is needed for rp2040)
   hl_query_top get-boot2-code > "${t1}"
@@ -205,7 +214,22 @@ if [ "$1" == "link" ]; then
   fi
 
   cat "${t1}" # the contents come out on stdout
-  exit 0 # done with link command
+}
+
+# link command requires special handling
+
+if [ "$1" == "link" ]; then
+  shift
+  handle_link_command /dev/null /dev/null $@
+  exit 0
+fi
+
+if [ "$1" == "link-debug" ]; then
+  shift
+  handle_link_command debug.o debug.map $@
+  echo "Notice: build debugging has been enabled with the link-debug command." >&2
+  echo "Notice: asm-32bit.sh has generated files debug.o and debug.map." >&2
+  exit 0
 fi
 
 # If not use get-next to query next script
