@@ -1,0 +1,4 @@
+SPDX-License-Identifier: Apache-2.0
+
+Based on the Kconfig license included in:
+segger-rtt-jlink-6.10m-zephyr-rtos-segger-f5f5728.patch
