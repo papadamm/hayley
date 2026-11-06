@@ -8,6 +8,8 @@ The repository contains some degree of support for the following MCU/SoC (CPU co
 - Nordic nRF52840 (ARM Cortex-M4)
 - Raspberry Pi RP2040 (ARM Cortex-M0+)
 - Renesas RZ/A2M r7s9210 (ARM Cortex-A9)
+- STMicro stm32f103 (ARM Cortex-M3)
+- STMicro stm32h743 (ARM Cortex-M7)
 - WCH ch32v003 (QingKe V2A) [RISC-V RV32EC]
 - WCH ch32v203 (QingKe V4B) [RISC-V RV32IMAC]
 
