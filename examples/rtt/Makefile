@@ -11,6 +11,7 @@ OBJ := rtt/rtt0.o rtt/rtt1.o rtt/rtt2.o main.o
 %.o: %.c
 	$(CROSS_COMPILE)gcc $(CFLAGS) -Wall -c $< -o $@
 
+.PHONY: file.hex
 default: file.hex
 clean:
 	rm -f $(OBJ) file.hex

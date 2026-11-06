@@ -11,6 +11,7 @@ OBJ := main.o uart-seeeduino-nano.o uart-ch32v003f4p6-r0-1v1.o
 %.o: %.c
 	$(CROSS_COMPILE)gcc $(CFLAGS) -Wall -c $< -o $@
 
+.PHONY: file.hex
 default: file.hex
 clean:
 	rm -f $(OBJ) file.hex

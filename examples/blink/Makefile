@@ -13,6 +13,7 @@ OBJ := main.o led-nordic-pca10059.o led-sparkfun-pro-micro.o \
 %.o: %.c
 	$(CROSS_COMPILE)gcc $(CFLAGS) -Wall -c $< -o $@
 
+.PHONY: file.hex
 default: file.hex
 clean:
 	rm -f $(OBJ) file.hex
