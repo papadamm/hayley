@@ -86,6 +86,10 @@ gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
                            const gpio_mode_t mode,
                            const gpio_ch32v_mode_detail_t detail);
 
+extern void
+gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
+                         const gpio_direction_t dir);
+
 extern void gpio_ch32v_init(void);
 
 #else /* defined(CH32V203C8T6_R0_1V0) || defined(CH32V003F4P6_R0_1V1) */
@@ -115,6 +119,10 @@ static inline void
 gpio_ch32v_set_mode_detail(const gpio_ch32v_port_pin_t pp,
                            const gpio_mode_t mode,
                            const gpio_ch32v_mode_detail_t detail) {}
+
+static inline void
+gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
+                         const gpio_direction_t dir) {}
 
 static inline void gpio_ch32v_init(void) {}
 

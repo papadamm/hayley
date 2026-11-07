@@ -291,6 +291,35 @@ void gpio_ch32v_set_mode(const gpio_ch32v_port_pin_t pp,
   }
 }
 
+void gpio_ch32v_set_direction(const gpio_ch32v_port_pin_t pp,
+                              const gpio_direction_t dir)
+{
+  gpio_ch32v_cfg_packed_t packed_a, packed_b;
+  gpio_ch32v_unpacked_per_gpio_data_t *unpacked;
+
+  if (pp.pin <= 7) {
+    unpacked = &gpio_ch32v_cfglr_occ[pp.port].unpacked[pp.pin];
+  } else {
+    unpacked = &gpio_ch32v_cfghr_occ[pp.port].unpacked[pp.pin - 8];
+  }
+
+  switch(dir) {
+  case GPIO_DIR_INPUT:
+    unpacked->idx = 0;
+    break;
+
+  case GPIO_DIR_OUTPUT:
+    unpacked->idx = 1;
+    break;
+  }
+
+  if (pp.pin <= 7) {
+    occ_pack_flush(&gpio_ch32v_cfglr_occ[pp.port].head, &packed_a, &packed_b);
+  } else {
+    occ_pack_flush(&gpio_ch32v_cfghr_occ[pp.port].head, &packed_a, &packed_b);
+  }
+}
+
 struct occ_pack_flush_ops gpio_ch32_occ_pack_flush_ops = {
   .init = gpio_ch32v_occ_init,
   .pack = gpio_ch32v_occ_pack,

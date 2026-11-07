@@ -123,6 +123,15 @@ gpio_atmega4809_set_mode(const gpio_atmega4809_port_pin_t pp,
                                  0x00, 0x01, 0x02);
 }
 
+static inline void
+gpio_atmega4809_set_direction(const gpio_atmega4809_port_pin_t pp,
+                              const gpio_direction_t dir)
+{
+  /* atomic direction reg access with VPORT.DIR, PORT.DIRSET and PORT.DIRCLR */
+  gpio_atmega4809_vport_port_set(pp, dir == GPIO_DIR_OUTPUT ? 1 : 0,
+                                 0x00, 0x01, 0x02);
+}
+
 #else /* ARDUINO_NANO_EVERY */
 
 typedef struct {
@@ -139,6 +148,10 @@ gpio_atmega4809_get_value(const gpio_atmega4809_port_pin_t pp) { return -1; }
 static inline void
 gpio_atmega4809_set_mode(const gpio_atmega4809_port_pin_t pp,
                          const gpio_mode_t mode) {}
+
+static inline void
+gpio_atmega4809_set_direction(const gpio_atmega4809_port_pin_t pp,
+                              const gpio_direction_t dir) {}
 
 #endif /* ARDUINO_NANO_EVERY */
 

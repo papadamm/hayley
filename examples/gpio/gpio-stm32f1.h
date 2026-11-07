@@ -71,6 +71,10 @@ gpio_stm32f1_set_mode_detail(const gpio_stm32f1_port_pin_t pp,
                              const gpio_mode_t mode,
                              const gpio_stm32f1_mode_detail_t detail);
 
+extern void
+gpio_stm32f1_set_direction(const gpio_stm32f1_port_pin_t pp,
+                           const gpio_direction_t dir);
+
 extern void gpio_stm32f1_init(void);
 
 #else  /* defined(PIXHAWK_6C_STM32F103) */
@@ -99,6 +103,10 @@ static inline void
 gpio_stm32f1_set_mode_detail(const gpio_stm32f1_port_pin_t pp,
                              const gpio_mode_t mode,
                              const gpio_stm32f1_mode_detail_t detail) {}
+
+static inline void
+gpio_stm32f1_set_direction(const gpio_stm32f1_port_pin_t pp,
+                           const gpio_direction_t dir) {}
 
 static inline void gpio_stm32f1_init(void) {}
 

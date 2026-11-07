@@ -101,6 +101,14 @@ gpio_atmega328_set_mode(const gpio_atmega328_port_pin_t pp,
   __gpio_atmega328_port_set(pp, mode == GPIO_MODE_OUTPUT ? 1 : 0, 0x01);
 }
 
+static inline void
+gpio_atmega328_set_direction(const gpio_atmega328_port_pin_t pp,
+                             const gpio_direction_t dir)
+{
+  /* atomic data register access with DDRB, DDRC or DDRD */
+  __gpio_atmega328_port_set(pp, dir == GPIO_DIR_OUTPUT ? 1 : 0, 0x01);
+}
+
 #else /* SEEEDUINO_NANO */
 
 typedef struct {
@@ -117,6 +125,10 @@ gpio_atmega328_get_value(const gpio_atmega328_port_pin_t pp) { return -1; }
 static inline void
 gpio_atmega328_set_mode(const gpio_atmega328_port_pin_t pp,
                         const gpio_mode_t mode) {}
+
+static inline void
+gpio_atmega328_set_direction(const gpio_atmega328_port_pin_t pp,
+                             const gpio_direction_t dir) {}
 
 #endif /* SEEEDUINO_NANO */
 

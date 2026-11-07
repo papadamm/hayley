@@ -285,6 +285,27 @@ void gpio_stm32h7_set_mode(const gpio_stm32h7_port_pin_t pp,
   }
 }
 
+void gpio_stm32h7_set_direction(const gpio_stm32h7_port_pin_t pp,
+                                const gpio_direction_t dir)
+{
+  gpio_stm32h7_cfg_packed_t packed_a, packed_b;
+  gpio_stm32h7_unpacked_per_gpio_data_t *unpacked;
+
+  unpacked = &gpio_stm32h7_occ[pp.port].unpacked[pp.pin];
+
+  switch(dir) {
+  case GPIO_DIR_INPUT:
+    unpacked->idx = 0;
+    break;
+
+  case GPIO_DIR_OUTPUT:
+    unpacked->idx = 1;
+    break;
+  }
+
+  occ_pack_flush(&gpio_stm32h7_occ[pp.port].head, &packed_a, &packed_b);
+}
+
 struct occ_pack_flush_ops gpio_stm32h7_occ_pack_flush_ops = {
   .init = gpio_stm32h7_occ_init,
   .pack = gpio_stm32h7_occ_pack,

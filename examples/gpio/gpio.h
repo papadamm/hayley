@@ -90,11 +90,11 @@ static inline void gpio_set_mode_detail(const gpio_port_pin_t pp,
 static inline void gpio_set_direction(const gpio_port_pin_t pp,
                                       const gpio_direction_t dir)
 {
-  if (dir == GPIO_DIR_OUTPUT) {
-    gpio_set_mode(pp, GPIO_MODE_OUTPUT);
-  } else {
-    gpio_set_mode(pp, GPIO_MODE_INPUT);
-  }
+  gpio_atmega328_set_direction(pp.u.atmega328, dir);
+  gpio_atmega4809_set_direction(pp.u.atmega4809, dir);
+  gpio_ch32v_set_direction(pp.u.ch32v, dir);
+  gpio_stm32f1_set_direction(pp.u.stm32f1, dir);
+  gpio_stm32h7_set_direction(pp.u.stm32h7, dir);
 }
 
 // the GPIO implementation comes with a sequencer
