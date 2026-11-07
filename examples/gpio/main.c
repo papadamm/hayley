@@ -81,84 +81,6 @@ static void silly_delay(uint32_t value)
   }
 }
 
-#if 0
-
-#define PIN_SDA GPIO_ATMEGA4809(GPIO_PORTD, 3) // A0
-#define PIN_SCL GPIO_ATMEGA4809(GPIO_PORTD, 2) // A1
-
-#define SEQ_SDA_L SEQ_CLEAR(0)
-#define SEQ_SDA_H SEQ_SET(0)
-#define SEQ_SCL_L SEQ_CLEAR(1)
-#define SEQ_SCL_H SEQ_SET(1)
-
-int i2c_send_data(uint8_t data)
-{
-  gpio_sequence_data_out_t data_out = GPIO_SEQ_DATA_OUT(0, 0, 0, 0, 0, 0, 0, 0);
-  gpio_sequence_data_in_t data_in = GPIO_SEQ_DATA_IN(0);
-  int k;
-
-  for (k = 0; k < 8; k++) {
-    data_out.data_out[k] = data & 0x01;
-    data >>= 1;
-  }
-
-  /* execute i2c sequence */
-  gpio_seq_run(GPIO_SEQ_PINS( PIN_SDA, PIN_SCL ),
-               GPIO_SEQ_OPCODES(
-                                 SEQ_SET(0), SEQ_SET(1),
-                                 SEQ_MODE_OUTPUT(0), SEQ_MODE_OUTPUT(1),
-                                 /* generate start condition */
-                                 SEQ_SDA_L, SEQ_BARRIER,
-                                 SEQ_SCL_L, SEQ_BARRIER,
-                                 /* clock out bit 7 */
-                                 SEQ_DATA_OUT(7), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 6 */
-                                 SEQ_DATA_OUT(6), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 5 */
-                                 SEQ_DATA_OUT(5), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 4 */
-                                 SEQ_DATA_OUT(4), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 3 */
-                                 SEQ_DATA_OUT(3), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 2 */
-                                 SEQ_DATA_OUT(2), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 1 */
-                                 SEQ_DATA_OUT(1), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* clock out bit 0 */
-                                 SEQ_DATA_OUT(0), SEQ_SET_VALUE(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_SCL_L,
-                                 /* ACK/NACK handling */
-                                 SEQ_MODE_INPUT(0), SEQ_DATA_IN(0),
-                                 SEQ_SCL_H, SEQ_BARRIER, SEQ_GET_VALUE(0),
-                                 SEQ_BARRIER, SEQ_SCL_L, SEQ_BARRIER,
-                                 SEQ_SDA_H, SEQ_MODE_OUTPUT(0),
-                                 SEQ_BARRIER ), &data_out, &data_in);
-
-  return data_in.data_in[0];
-}
-
-void i2c_trial(void)
-{
-  {
-    volatile uint8_t *PINCTRL = (void *)0x473;
-    *PINCTRL = 8; // Pull-up enabled
-  }
-
-  i2c_send_data(0x3c << 1);
-  i2c_send_data(0x00);
-}
-
-#else
-static inline void i2c_trial(void) {}
-#endif
-
 int main(void)
 {
 #if defined(PIXHAWK_6C_STM32H743)
@@ -184,8 +106,6 @@ int main(void)
 #endif
 
   led_setup();
-
-  i2c_trial();
 
   while (1) {
     led_on_set_value();
