@@ -18,8 +18,8 @@ __hl_next()
 }
 __hl_output()
 {
-  if [ -n "$1" ]; then /bin/echo -n "$1"; fi; if [ -n "$2" ]; then
-  if [ -n "$1" ]; then /bin/echo -n " "; fi; /bin/echo "$2"; fi
+  if [ -n "$1" ]; then /bin/echo -n "$1"; fi; shift
+  for e; do /bin/echo -n " $e"; done;
 }
 hl_report () { __hl_output "$@"; }
 hl_recurse_report () { __hl_output "$@" "`__hl_next`"; }
