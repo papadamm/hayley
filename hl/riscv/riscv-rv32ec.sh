@@ -10,8 +10,8 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
-    get-asmflags) hl_report -march=rv32ec -mabi=ilp32e ;;
-    get-cflags) hl_report -march=rv32ec -mabi=ilp32e ;;
+    get-asmflags) hl_report_recurse -march=rv32ec -mabi=ilp32e ;;
+    get-cflags) hl_report_recurse -march=rv32ec -mabi=ilp32e ;;
     get-next) hl_report riscv-32bit.sh ;;
   esac
 }
