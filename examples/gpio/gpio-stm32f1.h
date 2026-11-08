@@ -1,7 +1,7 @@
 #ifndef __GPIO_STM32F1_H__
 #define __GPIO_STM32F1_H__
 
-#if defined(PIXHAWK_6C_STM32F103)
+#if defined(STM32F103)
 
 typedef enum { GPIOA_PORT, GPIOB_PORT, GPIOC_PORT,
 	       GPIOD_PORT, GPIOE_PORT } gpio_stm32f1_port_t;
@@ -77,7 +77,7 @@ gpio_stm32f1_set_direction(const gpio_stm32f1_port_pin_t pp,
 
 extern void gpio_stm32f1_init(void);
 
-#else  /* defined(PIXHAWK_6C_STM32F103) */
+#else  /* defined(STM32F103) */
 
 typedef struct {
 } gpio_stm32f1_port_pin_t;
@@ -110,6 +110,6 @@ gpio_stm32f1_set_direction(const gpio_stm32f1_port_pin_t pp,
 
 static inline void gpio_stm32f1_init(void) {}
 
-#endif /* defined(PIXHAWK_6C_STM32F103) */
+#endif /* defined(STM32F103) */
 
 #endif /* __GPIO_STM32F1_H__ */

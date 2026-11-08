@@ -83,14 +83,14 @@ static void silly_delay(uint32_t value)
 
 int main(void)
 {
-#if defined(PIXHAWK_6C_STM32H743)
+#if defined(STM32H743)
   {
     volatile uint32_t *RCC_AHB4ENR = (void *)0x580244e0;
     *RCC_AHB4ENR = 0x7ff; /* enable GPIOA->GPIOK */
   }
   gpio_stm32h7_init();
 #endif
-#if defined(PIXHAWK_6C_STM32F103)
+#if defined(STM32F103)
   {
     volatile uint32_t *RCC_AP24ENR = (void *)0x40021018;
     *RCC_AP24ENR = 0x1fd; /* enable AFIO and GPIOA->GPIOG */

@@ -3,7 +3,7 @@
 #include "gpio.h"
 #include "occ-pack-flush.h"
 
-#if defined(PIXHAWK_6C_STM32H743)
+#if defined(STM32H743)
 
 typedef struct {
   uint8_t data; /* MODER, OTYPER, OSPEER and PUPDR are stored together */
@@ -336,4 +336,4 @@ void gpio_stm32h7_init(void)
   gpio_stm32h7_init_one(GPIOK_PORT);
 }
 
-#endif /* defined(PIXHAWK_6C_STM32H743) */
+#endif /* defined(STM32H743) */

@@ -3,7 +3,7 @@
 #include "gpio.h"
 #include "occ-pack-flush.h"
 
-#if defined(PIXHAWK_6C_STM32F103)
+#if defined(STM32F103)
 
 /* for each GPIO pin allow 3 sets of detail with index GPIO_MODE_xx */
 typedef struct {
@@ -269,4 +269,4 @@ void gpio_stm32f1_init(void)
   gpio_stm32f1_init_one(GPIOE_PORT);
 }
 
-#endif /* defined(PIXHAWK_6C_STM32F103) */
+#endif /* defined(STM32F103) */
