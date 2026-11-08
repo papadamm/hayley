@@ -1,29 +1,21 @@
 #!/bin/sh
 # HL - Hayley parameter query and build script
 
+HL_TOPDIR=..
+__hl_fx() { echo "`cd $2 && /bin/pwd`/$1"; }
+__hl_fy() { __hl_fx "$1" `dirname "$0"`; }
+__hl_fz() { __hl_fy "${HL_TOPDIR}/hl_root.sh"; }
+source `__hl_fz`
+
 hl_qry ()
 {
   case "$1" in
-    get-flash-base) echo 0x00000000 ;;
-    get-flash-size) echo 0x00010000 ;; # 64 KiB FLASH (F8, G8, K8, C8)
-    get-memory-base) echo 0x20000000 ;;
-    get-memory-size) echo 0x00005000 ;; # 20 KiB RAM (F8, G8, K8, C8)
-    get-next) echo ../riscv/riscv-rv32imac.sh ;;
+    get-flash-base) hl_report 0x00000000 ;;
+    get-flash-size) hl_report 0x00010000 ;; # 64 KiB FLASH (F8, G8, K8, C8)
+    get-memory-base) hl_report 0x20000000 ;;
+    get-memory-size) hl_report 0x00005000 ;; # 20 KiB RAM (F8, G8, K8, C8)
+    get-next) hl_report ../riscv/riscv-rv32imac.sh ;;
   esac
 }
 
-# Answer immediately and exit if we are able to
-Q=`hl_qry "$1"`
-if [ -n "$Q" ]; then echo "$Q"; exit 0; fi
-
-# If not use get-next to query next script
-abs_f () { echo "`cd $2 && /bin/pwd`/`basename $1`"; }
-DIRNAME_ZERO=`dirname "$0"`
-C=`abs_f "$0" "$DIRNAME_ZERO"`
-if [ -z "$HL_TOP" ]; then export HL_TOP=$C; fi
-for QN in `hl_qry get-next`
-do
-  DN=`dirname $QN`; DN2=`cd $DIRNAME_ZERO/$DN && /bin/pwd`
-  N=`abs_f "$QN" "$DN2"`
-  if [ -x "$N" ]; then $N $@; fi
-done
+hl_qry_default
