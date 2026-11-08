@@ -213,7 +213,7 @@ void gpio_stm32f1_set_mode(const gpio_stm32f1_port_pin_t pp,
     break;
 
   case GPIO_MODE_OUTPUT: /* General Purpose output push-pull */
-    gpio_stm32f1_set_mode_detail_ext(pp, mode, /* CNF = 0, MODE = 1 */
+    gpio_stm32f1_set_mode_detail_ext(pp, mode, /* CNF = 0, MODE = 3 */
                                          GPIO_MODE_DETAIL_STM32F1(0x00, 0x03));
     break;
 
