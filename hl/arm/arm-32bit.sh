@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+  get-next) hl_report ../hl_freestanding.sh ;;
   esac
 }
 
