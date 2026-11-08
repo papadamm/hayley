@@ -223,7 +223,7 @@ if [ "$1" == "link" ]; then
   fi
 
   cleanup() {
-    rm -f "${t0}" "${t1}" "${t2}" "${t3}" 2>/dev/null
+    rm -f "${t0}" "${t1}" "${t2}" "${t3}" "${t4}" 2>/dev/null
   }
 
   trap cleanup EXIT
@@ -231,7 +231,8 @@ if [ "$1" == "link" ]; then
   t1=$(mktemp)
   t2=$(mktemp)
   t3=$(mktemp)
-  for e in "${t0}" "${t1}" "${t2}" "${t3}"
+  t4=$(mktemp)
+  for e in "${t0}" "${t1}" "${t2}" "${t3}" "${t4}"
   do
     if [ -z "${e}" ]; then
       echo "Failed to create temporary file, exiting" >&2
@@ -279,8 +280,11 @@ if [ "$1" == "link" ]; then
   cat "${t0}" | ${HL_CROSS_COMPILE}gcc ${HL_TARGET_FLAGS} \
                                  -x assembler -c - -o "${t1}"
 
+  # add freestanding str code (memset, memcpy, memcmp)
+  hl_query_top get-str-code | uudecode -o "${t4}"
+
   shift
-  ${HL_CROSS_COMPILE}ld "-T${t2}" "-Map=${t3}" "${t1}" $@ -o "${t0}"
+  ${HL_CROSS_COMPILE}ld "-T${t2}" "-Map=${t3}" "${t1}" $@ "${t4}" -o "${t0}"
   if [ "${FLASH_BASE}" == 0x00004000 ]; then
     ${HL_CROSS_COMPILE}objcopy --change-section-address=.text=0 \
                                "${t0}" -O ihex "${t1}"

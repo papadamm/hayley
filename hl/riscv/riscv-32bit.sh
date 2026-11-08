@@ -138,14 +138,15 @@ if [ "$1" == "link" ]; then
   fi
 
   cleanup() {
-    rm -f "${t0}" "${t1}" "${t2}" 2>/dev/null
+    rm -f "${t0}" "${t1}" "${t2}" "${t3}" 2>/dev/null
   }
 
   trap cleanup EXIT
   t0=$(mktemp)
   t1=$(mktemp)
   t2=$(mktemp)
-  for e in "${t0}" "${t1}" "${t2}"
+  t3=$(mktemp)
+  for e in "${t0}" "${t1}" "${t2}" "${t3}"
   do
     if [ -z "${e}" ]; then
       echo "Failed to create temporary file, exiting" >&2
@@ -167,8 +168,11 @@ if [ "$1" == "link" ]; then
 
   emit_ldscript $FLASH_BASE $FLASH_SIZE $MEMORY_BASE $MEMORY_SIZE > "${t2}"
 
+  # add freestanding str code (memset, memcpy, memcmp)
+  hl_query_top get-str-code | uudecode -o "${t3}"
+
   shift
-  ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ -o "${t0}"
+  ${HL_CROSS_COMPILE}ld "-T${t2}" "${t1}" $@ "${t3}" -o "${t0}"
   ${HL_CROSS_COMPILE}objcopy "${t0}" -O ihex "${t1}"
 
   cat "${t1}" # the contents come out on stdout
