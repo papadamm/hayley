@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+    get-extra-flags) hl_report_recurse -DSTM32H743 ;;
     get-flash-base) hl_report 0x08000000 ;;
     get-flash-size) hl_report 0x00200000 ;;
     get-memory-base) hl_report 0x24000000 ;; # AXI SRAM

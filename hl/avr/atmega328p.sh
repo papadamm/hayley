@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+    get-extra-flags) hl_report_recurse -DATMEGA328P ;;
     get-asmflags) hl_report_recurse -mmcu=atmega328p ;;
     get-cflags) hl_report_recurse -mmcu=atmega328p ;;
     get-flash-base) hl_report 0x00000000 ;;

@@ -10,7 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
-    get-extra-flags) hl_report_recurse -DSPARKFUN_PRO_MICRO ;;
+    get-extra-flags) hl_report_recurse -DSPARKFUN_PRO_MICRO -DRP2040 ;;
     get-memory-base) hl_report 0x20000000 ;;
     get-memory-size) hl_report 0x00042000 ;;
     get-flash-base) hl_report 0x10000000 ;;

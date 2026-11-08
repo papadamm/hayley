@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+    get-extra-flags) hl_report_recurse -DGD32VF103 ;;
     get-flash-base) hl_report 0x00000000 ;;
     get-flash-size) hl_report 0x00004000 ;; # assume 16 KiB FLASH
     get-memory-base) hl_report 0x20000000 ;;

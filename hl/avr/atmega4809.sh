@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+    get-extra-flags) hl_report_recurse -DATMEGA4809 ;;
     get-asmflags) hl_report_recurse -mmcu=atmega48 ;;
     get-cflags) hl_report_recurse -mmcu=atmega48 -mshort-calls ;;
     get-flash-base) hl_report 0x00004000 ;;

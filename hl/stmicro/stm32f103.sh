@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+    get-extra-flags) hl_report_recurse -DSTM32F103 ;;
     get-flash-base) hl_report 0x08000000 ;;
     get-flash-size) hl_report 0x00010000 ;; # 64 KiB
     get-memory-base) hl_report 0x20000000 ;;

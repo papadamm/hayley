@@ -10,6 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
+    get-extra-flags) hl_report_recurse -DR7S9210 ;;
     get-flash-base) hl_report 0x80200000 ;; # "Large-Capacity On-Chip RAM"
     get-flash-size) hl_report 0x00100000 ;; # Page 3 (1024 KB) "
     get-memory-base) hl_report 0x80020000 ;;
