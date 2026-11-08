@@ -1,7 +1,7 @@
 #ifndef __GPIO_ATMEGA4809_H__
 #define __GPIO_ATMEGA4809_H__
 
-#ifdef ARDUINO_NANO_EVERY
+#if defined(ATMEGA4809)
 
 /* optimized constant gpio access using the lowest 32 bytes I/O space */
 static inline void vport_sbi(volatile void *addr, uint8_t bit)
@@ -132,7 +132,7 @@ gpio_atmega4809_set_direction(const gpio_atmega4809_port_pin_t pp,
                                  0x00, 0x01, 0x02);
 }
 
-#else /* ARDUINO_NANO_EVERY */
+#else /* defined(ATMEGA4809) */
 
 typedef struct {
 } gpio_atmega4809_port_pin_t;
@@ -153,6 +153,6 @@ static inline void
 gpio_atmega4809_set_direction(const gpio_atmega4809_port_pin_t pp,
                               const gpio_direction_t dir) {}
 
-#endif /* ARDUINO_NANO_EVERY */
+#endif /* defined(ATMEGA4809) */
 
 #endif /* __GPIO_ATMEGA4809_H__ */

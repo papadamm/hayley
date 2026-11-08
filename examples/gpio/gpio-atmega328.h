@@ -1,7 +1,7 @@
 #ifndef __GPIO_ATMEGA328_H__
 #define __GPIO_ATMEGA328_H__
 
-#ifdef SEEEDUINO_NANO
+#if defined(ATMEGA328P)
 
 /* optimized constant gpio access using the lowest 32 bytes I/O space */
 static inline void avr_sbi(volatile void *addr, uint8_t bit)
@@ -109,7 +109,7 @@ gpio_atmega328_set_direction(const gpio_atmega328_port_pin_t pp,
   __gpio_atmega328_port_set(pp, dir == GPIO_DIR_OUTPUT ? 1 : 0, 0x01);
 }
 
-#else /* SEEEDUINO_NANO */
+#else /* defined(ATMEGA328P) */
 
 typedef struct {
 } gpio_atmega328_port_pin_t;
@@ -130,6 +130,6 @@ static inline void
 gpio_atmega328_set_direction(const gpio_atmega328_port_pin_t pp,
                              const gpio_direction_t dir) {}
 
-#endif /* SEEEDUINO_NANO */
+#endif /* defined(ATMEGA328P) */
 
 #endif /* __GPIO_ATMEGA328_H__ */
