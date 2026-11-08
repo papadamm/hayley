@@ -10,7 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
-    get-extra-flags) hl_report -DCH32V003F4P6_R0_1V1 ;;
+    get-extra-flags) hl_report_recurse -DCH32V003F4P6_R0_1V1 ;;
     get-next) hl_report ch32v003.sh ;;
   esac
 }
