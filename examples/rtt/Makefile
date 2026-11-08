@@ -4,6 +4,7 @@ $(if $(shell echo $(HL)),, $(error Unable to parse HL environment variable))
 CROSS_COMPILE := $(shell $(HL) get-cross-compile)
 CFLAGS := $(shell $(HL) get-cflags) $(shell $(HL) get-extra-flags)
 ASMFLAGS := $(shell $(HL) get-asmflags)
+LDFLAGS := $(shell $(HL) get-ldflags)
 OBJ := rtt/rtt0.o rtt/rtt1.o rtt/rtt2.o main.o
 
 %.o: %.S
@@ -17,4 +18,4 @@ clean:
 	rm -f $(OBJ) file.hex
 
 file.hex: $(OBJ)
-	$(HL) link $^ > $@
+	$(HL) link $^ $(LDFLAGS) > $@
