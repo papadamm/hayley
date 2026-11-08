@@ -10,7 +10,7 @@ source `__hl_fz`
 hl_qry ()
 {
   case "$1" in
-    get-extra-flags) hl_report -DPIXHAWK_6C_STM32F103 ;;
+    get-extra-flags) hl_report_recurse -DPIXHAWK_6C_STM32F103 ;;
     get-next) hl_report ../stmicro/stm32f103.sh ;;
   esac
 }
