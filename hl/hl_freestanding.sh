@@ -11,7 +11,7 @@ hl_qry ()
 {
   case "$1" in
     get-cflags) hl_report_recurse -ffreestanding -O0 ;;
-    get-ldflags) hl_report_recurse -nostdlib -lgcc ;;
+    get-ldflags) hl_report_recurse -nostdlib ;;
   esac
 }
 
